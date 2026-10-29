@@ -229,7 +229,10 @@ This skill is **alive** — 疆疆 keeps adding habits over time. The agent shou
    | 完全新项目 / 完全新类目（安全 / 测试 / 部署 …） | 新建 `references/<topic>.md` 并在 §3 触发表加一行 |
 
 4. **写入格式**：在对应 section 末尾追加一行 / 段，行尾加 `[疆疆 added YYYY-MM-DD]` 标记。
-5. **同步 + 即时生效**：直接修改 `~/.cursor/skills/` 下对应的 skill（Cursor 实时生效），再通过 `rsync` 同步到 GitHub 备份仓库目录 `~/.cursor/skills-github-export/`（远端 `https://github.com/ppdbxdawj/ai-agent-skills.git`）。同步完后**当前会话立即视新内容已生效**，不要用旧规则继续做事。`[疆疆 updated 2026-10-29 (cross-project)]`
+5. **同步 + 即时生效**：直接修改 `~/.cursor/skills/` 下对应的 skill（Cursor 实时生效），再同步到两个 GitHub 备份目录：
+   - **私密原版备份**：`~/.cursor/skills-github-export/`（远端私有库 `https://github.com/ppdbxdawj/cursor-skills.git`，1:1 原样保留）；
+   - **公开脱敏版本**：`~/.cursor/skills-public-export/`（远端公开库 `https://github.com/ppdbxdawj/ai-agent-skills.git`，脱敏内部链接/域名/路径后推送）。
+   同步完后**当前会话立即视新内容已生效**，不要用旧规则继续做事。`[疆疆 updated 2026-10-29 (cross-project)]`
 6. **回报 + 回写而非只修当次**：一句话告诉疆疆「已加到 `<file>` 的 `<section>`」，必要时附上原文。**关键：被纠正时不只是修当前文件，要同步把新规则写回 skill**，下次才不会再犯同样错误。`[疆疆 added 2026-05-25 (cross-project)]`
 
 ### 4.3 渐进加载落实自检 | Lazy-load self-check
