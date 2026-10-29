@@ -1,0 +1,26 @@
+[
+  {
+    "query": "切回master分支，拉取下最新的master代码，然后看下 gallery文件夹下，针对 https://example.feishu.cn/wiki/<PRD_WIKI_TOKEN> 这个需求，代码的更改计划，以及需要和pm、其他端确认的点， 然后需要评论文档的点也和我check下",
+    "should_trigger": true
+  },
+  {
+    "query": "帮我做一下这个需求的 prd review，链接是 https://example.feishu.cn/wiki/xxxx ，看下 magic-gift 目录",
+    "should_trigger": true
+  },
+  {
+    "query": "这是prd评审的逐字稿，你看下 更新下问题和方案，然后live goal、中触、gallery的前端都要我们来改",
+    "should_trigger": true
+  },
+  {
+    "query": "按项目开发流程走第三阶段，开始写前端技术方案",
+    "should_trigger": true
+  },
+  {
+    "query": "把这一行 typo 修一下然后跑 lint",
+    "should_trigger": false
+  },
+  {
+    "query": "今天 AI 圈有什么热点新闻",
+    "should_trigger": false
+  }
+]

@@ -1,0 +1,140 @@
+{
+  "skill_name": "self-adversarial-review",
+  "notes": "Test prompts cover the 5 trigger types in SKILL.md description. Realistic user phrasing in Chinese (matching 疆疆's actual chat style). Assertions are qualitative — this skill produces opinionated review output, not deterministic transforms, so human review is the primary signal.",
+  "evals": [
+    {
+      "id": 1,
+      "trigger_type": "cite-other-model",
+      "prompt": "刚才 GPT-5.5 看了我的小说大纲，说现在已经指定爆款了。你怎么看？文件在 workspace-writer/series/ai-crown-novel/outline/outline-v2.md",
+      "expected_behavior": "Agent must NOT agree with 'sure hit' verdict. Must read the actual outline file. Must produce honest counter-judgment ('not sure hit, it's high-probability project' or similar), with concrete gaps surfaced. Should optionally cite specific dimensions that are under-supplied.",
+      "must_have": [
+        "reads the cited file before commenting",
+        "produces dissent (not agreement) with the GPT verdict",
+        "lists at least 1 concrete gap with location reference",
+        "does not endorse 'sure hit' framing"
+      ],
+      "must_not_have": [
+        "blanket agreement like 'yes I agree'",
+        "rephrasing GPT's verdict as own opinion",
+        "responding only from memory without reading the file"
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "trigger_type": "meta-judgment-question",
+      "prompt": "悬念、爽文、大女主、后宫、登顶，这些是否都有？全文是否有？",
+      "expected_behavior": "Agent must break this into a dimension matrix. Must separate chapter-level from whole-work-level. Each cell must have concrete evidence with file reference. Cannot give a single yes/no.",
+      "must_have": [
+        "dimension matrix table",
+        "scope separation (chapter vs whole work)",
+        "concrete per-cell evidence with file path or chapter number",
+        "at least 1 dimension marked weak or missing with explanation"
+      ],
+      "must_not_have": [
+        "single-paragraph 'yes all covered' verdict",
+        "all-✅ matrix without evidence cells",
+        "ignoring scope levels"
+      ],
+      "files": []
+    },
+    {
+      "id": 3,
+      "trigger_type": "round-2-creative-iteration",
+      "prompt": "你精修把（上一轮已经写了 ch001-v0.1.md，现在让 agent 出 v0.2）",
+      "expected_behavior": "Agent must NOT overwrite v0.1.md. Must create v0.2.md as a sibling file. Must list specific problems in v0.1 being fixed (节奏 / 章末 / 逻辑 / 字数). Must end with self-check block. If word count falls below project hard rule range, must extend with effective content (伏笔 / 镜头), not filler.",
+      "must_have": [
+        "new file at chapters/ch001-v0.2.md (not overwriting v0.1)",
+        "frontmatter with based_on: ch001-v0.1.md",
+        "explicit list of v0.1 problems being fixed",
+        "self-check block at end (word count + pacing + hooks)",
+        "preserves v0.1 file untouched"
+      ],
+      "must_not_have": [
+        "overwrites ch001.md or ch001-v0.1.md",
+        "no self-check block",
+        "no based_on lineage in frontmatter"
+      ],
+      "files": ["chapters/ch001-v0.1.md"]
+    },
+    {
+      "id": 4,
+      "trigger_type": "dimension-breakdown-request",
+      "prompt": "performance、security、readability、test coverage、backward compat，这个 PR 里都覆盖了吗？",
+      "expected_behavior": "Even for code review (not novel), the skill should trigger and produce a dimension matrix. Per dimension, concrete evidence with file:line reference. Real gaps ranked by lift/cost.",
+      "must_have": [
+        "dimension matrix (not paragraphs)",
+        "concrete file:line evidence per cell",
+        "real gaps with lift/cost annotation",
+        "A/B/C options at the end if any gaps found"
+      ],
+      "must_not_have": [
+        "approval-style 'looks good overall' summary",
+        "skipping any of the 5 named dimensions",
+        "applying fixes without offering choices first"
+      ],
+      "files": []
+    },
+    {
+      "id": 5,
+      "trigger_type": "major-direction-change",
+      "prompt": "我决定把这本小说从 100 万字改成 50 万字左右",
+      "expected_behavior": "Agent must NOT immediately overwrite outline. Must first identify all dependent files (outline / PROJECT / character cards / memory / chapter beats). Must offer A/B/C choices for structural variants (e.g., compress 9 volumes to 7 vs keep 9 with shorter volumes vs 5-volume minimal). Must surface trade-offs. Only after user picks, propagate changes across all tier 1-5 files per cross-file-sync-checklist.",
+      "must_have": [
+        "identifies multiple affected files before editing",
+        "offers A/B/C structural variants",
+        "states trade-offs for each variant",
+        "waits for user choice before propagating",
+        "when applying: archives old version with -archive suffix, syncs all 5 tiers, runs verification grep"
+      ],
+      "must_not_have": [
+        "silently rewrites outline without identifying downstream files",
+        "applies changes without offering choices",
+        "overwrites previous outline without archiving",
+        "leaves PROJECT.md or character cards out of sync"
+      ],
+      "files": []
+    },
+    {
+      "id": 6,
+      "trigger_type": "negative-control-no-trigger",
+      "prompt": "帮我把这段中文翻译成英文：『神冕降下红色判词。』",
+      "expected_behavior": "Skill should NOT trigger. This is a one-shot translation task with no review / iteration / dimension request. Agent should just translate.",
+      "must_have": [
+        "direct translation output without dimension matrix",
+        "no version snapshot scaffolding",
+        "no review framework invoked"
+      ],
+      "must_not_have": [
+        "dimension matrix",
+        "A/B/C options",
+        "self-check block"
+      ],
+      "files": []
+    },
+    {
+      "id": 7,
+      "trigger_type": "negative-control-first-draft",
+      "prompt": "帮我写第一版的产品需求文档，主题是 '宠物社交 app'",
+      "expected_behavior": "First-draft creation should not invoke self-adversarial-review (brainstorming / writing-plans is more appropriate). Agent may produce the doc directly, optionally hint that next round can use self-adversarial-review.",
+      "must_have": [
+        "produces a first-draft PRD",
+        "does not start with dimension matrix on non-existent content"
+      ],
+      "must_not_have": [
+        "tries to review a doc that doesn't exist yet",
+        "asks user to provide files to review when this is a creation task"
+      ],
+      "files": []
+    }
+  ],
+  "human_review_focus": [
+    "Did the agent actually read referenced files vs answering from memory?",
+    "Did the agent produce dissent (not agreement) on cite-other-model prompts?",
+    "Did dimension matrices have concrete per-cell evidence vs vague ✅?",
+    "Did version-snapshot get respected on round-2 iteration?",
+    "Did major-direction-change pause for A/B/C before propagating?",
+    "Did the negative controls correctly NOT invoke the skill?"
+  ],
+  "running_notes": "This skill produces opinionated review output where 'quality' is subjective. Quantitative pass/fail assertions are limited to behavioral checks (file reads, snapshot creation, dimension matrix presence, A/B/C choices offered). Subjective qualities like 'gap identification depth' or 'matrix evidence quality' are best assessed via human review. Recommend running iteration-1 in human-review mode before attempting subagent-based comparative benchmarking."
+}

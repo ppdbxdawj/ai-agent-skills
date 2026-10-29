@@ -1,0 +1,71 @@
+{
+  "skill_name": "jiangjiang-project-dev",
+  "notes": "Evaluates Stage 1 (PRD Review), Stage 2 (Post-PRD Review Meeting Sync), Stage 3 (FE Tech Design + AI Plan dual deliverables), and strict stage isolation against undefined future stages.",
+  "evals": [
+    {
+      "id": 1,
+      "stage": "stage-1-prd-review",
+      "prompt": "切回master分支，拉取下最新的master代码，然后看下 gallery文件夹下，针对 https://example.feishu.cn/wiki/<PRD_WIKI_TOKEN> 这个需求，代码的更改计划，以及需要和pm、其他端确认的点， 然后需要评论文档的点也和我check下",
+      "expected_behavior": "Agent must trigger Stage 1 (PRD Review): (1) checkout master and pull origin master; (2) use lark-cli to fetch the Feishu PRD (if user token is missing, run lark-cli auth login --no-wait --json + lark-cli auth qrcode and ask user to authorize; NEVER scrape Feishu via Chrome AppleScript); (3) inspect gallery packages in codebase read-only; (4) output Code Change Plan, Points to Confirm with PM/Server/Client, and Draft Doc Comments (PM-only, no @-mentions) for user check before posting.",
+      "must_have": [
+        "runs git checkout master and git pull origin master",
+        "uses lark-cli docs +fetch (or lark-cli auth login + qrcode if token missing)",
+        "inspects gallery directories in the codebase without modifying business source files",
+        "delivers 3 distinct sections: Code Change Plan, Points to Confirm (PM / Server / Client), and Draft Doc Comments (PM-only, no @mentions) for check"
+      ],
+      "must_not_have": [
+        "uses Chrome AppleScript to scrape Feishu doc DOM",
+        "posts comments to Feishu doc before user checks and approves them",
+        "modifies business code files during PRD review stage",
+        "conflates Stage 1 PRD review with Stage 3 Tech Design writing"
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "stage": "stage-2-prd-review-sync",
+      "prompt": "这是prd评审的逐字稿，你看下 更新下问题和方案，然后live goal、中触、gallery的前端都要我们来改",
+      "expected_behavior": "Agent must trigger Stage 2 (Post-PRD Review Meeting Sync): (1) read the meeting transcript and cite line ranges [Transcript Lxx-Lyy] for every decision; (2) inspect newly added packages (live-goal, giftgallery-indicator, gift-gallery-main) read-only; (3) output 3 deliverables: Key Decisions Table from the meeting, Updated Full-Scope FE Code Change Plan (with exact file paths & line numbers), and Updated Remaining Open Items (TBD). Must NOT prematurely create Feishu Tech Design docs (Stage 3).",
+      "must_have": [
+        "reads the transcript and cites [Transcript Lxx-Lyy] sources for decisions",
+        "inspects all specified frontend packages (live-goal, indicator, gallery) read-only",
+        "outputs Key Decisions Table, Updated Full-Scope Code Change Plan, and Remaining TBDs"
+      ],
+      "must_not_have": [
+        "modifies business source files",
+        "prematurely creates Feishu Tech Design doc before Stage 3 is triggered"
+      ],
+      "files": []
+    },
+    {
+      "id": 3,
+      "stage": "stage-3-fe-tech-design",
+      "prompt": "用之前的前端技术方案模板开始撰写前端技术方案",
+      "expected_behavior": "Agent must trigger Stage 3 and produce TWO separate artifacts: (1) Human-facing Feishu Tech Design doc in my_library (bilingual CN+EN, single-language section headings, top 中文/English anchor links, Mermaid flow chart, PRD screenshots, red-highlighted TBDs, NO internal line numbers or raw code trees); (2) AI-facing <feature>-fe-plan.md saved locally in repo root AND uploaded to Feishu my_library (containing exact file paths, line numbers, step-by-step instructions, non-goals, verification commands, and QA entry test cases), linked from the Tech Design doc's Reference table and Code changes section.",
+      "must_have": [
+        "creates human-facing Feishu Tech Design doc without cluttering it with line numbers or raw code file trees",
+        "writes local <feature>-fe-plan.md with exact file paths, line numbers, steps, non-goals, and test cases for AI execution",
+        "uploads <feature>-fe-plan.md to Feishu and links it inside the human-facing Feishu Tech Design doc"
+      ],
+      "must_not_have": [
+        "mixes internal line numbers and code trees into the human-facing tech design prose",
+        "leaves the AI-facing -fe-plan only on local disk without uploading and linking it on Feishu"
+      ],
+      "files": []
+    },
+    {
+      "id": 4,
+      "stage": "stage-isolation-check",
+      "prompt": "我们要做 Stage 4 的流程，你按项目开发 skill 走",
+      "expected_behavior": "Agent must recognize that Stage 4+ is currently a placeholder in jiangjiang-project-dev and must NOT hallucinate a workflow; it should ask 疆疆 to define the exact steps for Stage 4 first.",
+      "must_have": [
+        "identifies Stage 4+ as TBD / not yet defined in jiangjiang-project-dev",
+        "asks user for the exact requirements/steps before executing or codifying it"
+      ],
+      "must_not_have": [
+        "hallucinates a made-up Stage 4 SOP"
+      ],
+      "files": []
+    }
+  ]
+}

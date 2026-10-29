@@ -1,0 +1,23 @@
+{
+  "skill_name": "technical-doc-writing",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "我接到一个需求：分析一个新功能的用户画像。帮我先判断这个文档真正要回答什么，别急着写正文。",
+      "expected_output": "Should apply the source doc's expectation/goal check: distinguish surface request from actual ask, ask why this doc exists, who wants to read it, why they want it, and whether the expected output is broader business understanding and planning rather than only demographic analysis.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "我有一份双周报，里面堆了很多本周做了什么。帮我按「如何写文档v2」的方法改成更适合双周会的结构。",
+      "expected_output": "Should use the source doc's biweekly report guidance: start from expectation and goal, extract core metrics, organize by business modules, keep decision/problem/resource-bottleneck items, remove unlaunched or smooth-progress items with no decision point.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "我要写一个业务关键问题材料，但现在只有一堆讨论记录。帮我按文档方法论列一个写作步骤。",
+      "expected_output": "Should follow the source doc's key-issue material workflow: analyze the question and stakeholders, form a story line, use induction and deduction to test the viewpoint, add evidence, confirm the viewpoint, and produce consensus plus best practices.",
+      "files": []
+    }
+  ]
+}

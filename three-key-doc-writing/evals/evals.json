@@ -1,0 +1,23 @@
+{
+  "skill_name": "three-key-doc-writing",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "我有一段功能清单式文档，读者说找不到自己要做什么。请按《写好文档的三个关键》帮我 review。",
+      "expected_output": "Should apply reader-oriented writing: distinguish feature inventory from reader tasks, identify what the reader wants to accomplish, and recommend task-oriented headings and labels close to the reader's language.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "这篇文档全是长段落，信息很多但读者扫不出来重点。请按结构化写作方法改框架。",
+      "expected_output": "Should apply F-shaped reading and structured writing: diagnose lack of layout and unclear relationships, then reorganize with conclusion-first hierarchy, grouping, logical progression, and suitable lists/tables.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "这段技术文档太啰嗦、有很多抽象词和主观描述。帮我按极简写作改一版。",
+      "expected_output": "Should apply minimal writing: remove filler, reduce redundant words, replace subjective claims with concrete data where possible, use simpler wording, direct verbs, shorter sentences, and plain language.",
+      "files": []
+    }
+  ]
+}

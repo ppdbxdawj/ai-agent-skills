@@ -1,0 +1,38 @@
+{
+  "ratio": "9:16",
+  "generate_audio": true,
+  "poll_interval_sec": 40,
+  "timeout_sec": 1200,
+  "segments": [
+    {
+      "name": "seg01",
+      "prompt_file": "/absolute/path/seg01-prompt.txt",
+      "ref_images": ["/absolute/path/angela__music-on-stage.png"],
+      "duration": 13,
+      "related_to_previous": false
+    },
+    {
+      "name": "seg02",
+      "prompt_file": "/absolute/path/seg02-prompt.txt",
+      "ref_images": [
+        "/absolute/path/rocky__base.png",
+        "/absolute/path/jollie__base.png",
+        "/absolute/path/rosie__base.png",
+        "/absolute/path/sage__base.png"
+      ],
+      "duration": 8,
+      "related_to_previous": true
+    },
+    {
+      "name": "seg03",
+      "prompt_file": "/absolute/path/seg03-prompt.txt",
+      "ref_images": [
+        "/absolute/path/angela__music-on-stage.png",
+        "/absolute/path/jollie__base.png",
+        "/absolute/path/rocky__base.png"
+      ],
+      "duration": 8,
+      "related_to_previous": true
+    }
+  ]
+}

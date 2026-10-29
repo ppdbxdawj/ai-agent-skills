@@ -1,0 +1,23 @@
+{
+  "skill_name": "rd-doc-writing",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "我要写一个项目立项文档，只有背景和方案草稿。帮我按《文档的艺术：研发工程师怎么写好文档》的方法检查缺什么。",
+      "expected_output": "Should check purpose, reader, background/conflict/question/answer, whether the solution is derived from problem decomposition, whether milestones/risks/benefits are clear, and whether data evidence is needed.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "我有一个 SOP 文档，内容很长但别人还是不会照着做。帮我 review。",
+      "expected_output": "Should apply the source doc's SOP purpose: knowledge sharing and experience sedimentation; check reader understanding, sequence, diagrams, annotations, clarity, and whether the SOP avoids repeated research and pitfalls.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "我写了一个技术方案，背景之后直接开始讲方案。帮我看看问题。",
+      "expected_output": "Should identify the source-doc issue of jumping from background directly to solution; recommend adding problem analysis, decomposition, difficulty, cut-in point, solution mapping, and benefit/data proof.",
+      "files": []
+    }
+  ]
+}
