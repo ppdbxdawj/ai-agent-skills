@@ -43,7 +43,7 @@ Follow this file strictly when 疆疆 asks to write the Frontend Technical Desig
    - `<h1>Including Pages</h1>`（中文：`<h1>涉及页面</h1>`）
      - 顶部汇总表（`页面 | 功能 | 备注 | 预估排期`）只写一句话核心职责与待确认编号，不展开细节；
      - 各页面子模块用简短 `<h3>` 标题（如 `<h3>直播间展馆中触</h3>`，不堆砌副标题），内部**固定用 `<h4>` 小标题**（不用 `<p><b>入口：</b></p>`）：`<h4><b>入口</b>：</h4>`、`<h4>页面截图：</h4>`、`<h4>UI：</h4>`、`<h4>逻辑：</h4>`（不含内部函数名/行号）、`<h4>涉及接口：</h4>`、`<h4>模块开发估时：</h4>`。`[疆疆 updated 2026-11-04]`
-     - **【图片尺寸控制】**：插入飞书文档的模块截图必须控制宽高与 `scale`，严禁按 `1280px` / `scale="1.0"` 原图巨幅撑满整屏（推荐：横向多屏合成图 `width="480"`、`scale≈0.375`；竖向单屏长图 `width="320"~380`、`height≤580`、`scale≈0.36~0.45`）。`[疆疆 added 2026-11-04]`
+     - **【图片尺寸控制】**：飞书文档的 `<img width="W" height="H" scale="S"/>` 实际渲染宽度是 `W × S`，因此**严禁同时把 `width` 改小又传 `scale < 1`**（否则会被双重缩小成邮票大小）。统一**不传 `scale`（默认 `scale="1.0"`）**，只传目标显示 `width` 和等比 `height`：横向多屏合成图设 `width="660"` 左右，竖向长图设 `width="460"~540`（对齐 `tpl_dup` 范例的 `550~700px` 实际显示宽度）。`[疆疆 updated 2026-11-04]`
    - `<h1>General technical details combing</h1>`（中文：`<h1>通用技术细节梳理</h1>`；必须包含以下完整 `<h2>` 子节：`Interface / 接口梳理`、`Code changes / 本仓库改动`、`Page schema / 页面 Schema`、`Public Components / 公共组件`、`End Capability Grooming / 端能力梳理`、`RTL Solutions / RTL 方案`、`Landscape compatible / 横屏兼容`、`Event Log / 埋点方案`、`文案`、`Settings`）
    - `<h1>Test & Release</h1>`（中文：`<h1>测试与发布</h1>`；必须拆分为 6 个独立 `<h2>`：`Test focus / 测试重点`、`Security / 安全合规`、`Monitor / 监控方案`、`AB Test / AB 实验`、`Release plan / 上线方案`、`Rollback plan / 回滚方案`，不要合并成一个段落）
    - `<h1>TBD / Open Items</h1>`（中文：`<h1>待确认点</h1>`；分 `Server`、`PM`、`Client` 表格）
