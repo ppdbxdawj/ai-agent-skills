@@ -58,7 +58,7 @@ EOF
 4. （如有需要）`git refresh-branch` 或 `git fetch origin master && git rebase origin/master`
 5. `git commit`（HEREDOC，body ≤ 100）
 6. `git push`，重写过历史就用 `--force-with-lease`
-7. 必要时建 MR（`<internal-gitlab-domain>` 走 GitLab UI）
+7. 必要时建 MR（`git.example.com` 走 GitLab UI）
 
 `[疆疆 added 2026-05-25 (from history)]`
 
@@ -67,6 +67,8 @@ EOF
 monorepo 已有全局 alias `git refresh-branch`（master → rebase origin → 删旧分支 → 同名 -b 重出）；要刷新分支直接用，不要手敲整串命令。详见 [`live-revenue-monorepo.md`](live-revenue-monorepo.md#git-refresh-branch-alias)。
 
 **整理分支时只保留自己的 commits** — rebase / cherry-pick 整理历史时把别人的 commit 剔掉，只留疆疆这条线的；merge 别人代码进来不算自己的 commit。`[疆疆 added 2026-05-25 (from history)]`
+
+**多轮方案迭代的功能分支在 rebase 主干前先 squash 成单 commit** — 当功能分支经过多轮方案调整（如 commit 1 新增了某实验组、commit 3 又删掉了该实验组），在 `git rebase origin/master` 前先用 `git reset --soft <merge-base>` + `git commit`（注意 commit body 每行 ≤ 100 字符以通过 commitlint）压成 1 个代表最终状态的干净 commit 再 rebase，避免在中间已被推翻的过渡 commit 上重复解冲突。`[疆疆 added 2026-11-09]`
 
 手动版：
 

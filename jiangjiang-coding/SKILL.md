@@ -118,8 +118,8 @@ This file is the **always-on layer** — communication style and general work pr
   New / updated skills go through `skill-creator` (intent → structure → triggers → eval); skipping eval is a known push back.
 - **创作型迭代分版本不覆盖** — 写小说 / 剧本 / 文案 / 设计稿等创作工作，每轮迭代独立存档（`<slug>-v0.1.md → v0.2.md → v0.2.1.md`）方便对比与回滚。重大方向变更时旧版本归档（如 `outline-v2-100w-archive.md`），不允许直接覆盖之前的版本。详细命名 / 自检 / 反模式见 `self-adversarial-review/references/version-snapshot-protocol.md`。`[疆疆 added 2026-05-28 (cross-project)]`  
   For creative iteration (novel / screenplay / copy / design draft), snapshot every round as a sibling file (`<slug>-v0.1` → `v0.2` → `v0.2.1`); archive previous version on major direction changes (`-archive` suffix). Never overwrite prior versions. See `self-adversarial-review/references/version-snapshot-protocol.md`.
-- **读内网 / 需登录的链接：飞书资源一律走 `lark-cli`，非飞书内网才用 computer use** — 疆疆给飞书链接（`example.feishu.cn` / `feishu.cn` 的 docx、wiki、sheets、base 等）让读时，**必须走 `lark-cli`**（先试默认/`--as user`，若报 `token_missing` / `need_user_authorization` 则直接走 `lark-cli auth login --no-wait --json` 发授权链接和二维码给疆疆完成授权，**禁止**切 Chrome AppleScript 抓飞书文档 DOM）。只有 `lark-cli` 不覆盖的非飞书内网页面（如 bytetech、Meego、Oncall 等），才用本机浏览器只读获取，且用完关掉自己开的标签页、不要抢焦点切前台 tab。`[疆疆 updated 2026-10-29 (cross-project)]`  
-  For Feishu links (`example.feishu.cn` / `feishu.cn`), **always use `lark-cli`** — if the user token is missing or expired, trigger `lark-cli auth login` (split-flow with URL + QR code) rather than scraping Feishu DOM via Chrome AppleScript. Reserve local browser computer-use strictly for non-Feishu internal sites (`bytetech`, `Meego`, etc.) not covered by `lark-cli`, stay read-only, and never steal focus or leave temporary tabs open.
+- **读内网 / 需登录的链接：飞书资源一律走 `lark-cli`，非飞书内网才用 computer use** — 疆疆给飞书链接（`larkoffice.com` / `feishu.cn` 的 docx、wiki、sheets、base 等）让读时，**必须走 `lark-cli`**（先试默认/`--as user`，若报 `token_missing` / `need_user_authorization` 则直接走 `lark-cli auth login --no-wait --json` 发授权链接和二维码给疆疆完成授权，**禁止**切 Chrome AppleScript 抓飞书文档 DOM）。只有 `lark-cli` 不覆盖的非飞书内网页面（如 bytetech、Meego、Oncall 等），才用本机浏览器只读获取，且用完关掉自己开的标签页、不要抢焦点切前台 tab。`[疆疆 updated 2026-10-29 (cross-project)]`  
+  For Feishu links (`larkoffice.com` / `feishu.cn`), **always use `lark-cli`** — if the user token is missing or expired, trigger `lark-cli auth login` (split-flow with URL + QR code) rather than scraping Feishu DOM via Chrome AppleScript. Reserve local browser computer-use strictly for non-Feishu internal sites (`bytetech`, `Meego`, etc.) not covered by `lark-cli`, stay read-only, and never steal focus or leave temporary tabs open.
 
 ## 2.5 Agent / AI-native 工作规则 | Agent / AI-native working rules
 
@@ -155,7 +155,7 @@ This skill is not the harness; it is the **policy + memory** layer riding on top
 | 数据建模、队列 / 限流、敏感配置、节点契约 / 服务拆分、资产输出格式 | [`references/architecture-and-data.md`](references/architecture-and-data.md) |
 | 写技术文档 / 周报 / 评审材料 / 给 leader 的变更说明 | [`references/communication-and-docs.md`](references/communication-and-docs.md) |
 | 写 AI coding plan / implementation plan / 技术方案 / Plan Mode 方案 | [`references/plan-writing.md`](references/plan-writing.md) |
-| 工作项目开发多阶段流程（Stage 1: PRD Review → Stage 2: PRD 评审会复盘 → Stage 3: 撰写前端技术方案，阶段严格隔离） | [`../jiangjiang-project-dev/SKILL.md`](../jiangjiang-project-dev/SKILL.md) `[2026-10-29]` |
+| 工作项目开发多阶段流程（Stage 1: PRD Review → Stage 2: PRD 评审会复盘 → Stage 3: 撰写前端技术方案 → Stage 4: 切分支开发 → Stage 5: 技术评审与 IDL 对齐 → Stage 6: 埋点评审与落地，阶段严格隔离） | [`../jiangjiang-project-dev/SKILL.md`](../jiangjiang-project-dev/SKILL.md) `[2026-11-09]` |
 | 出现意料外报错、典型坑、安全 / 密钥事故 | [`references/pitfalls.md`](references/pitfalls.md) |
 
 ### 3.2 项目专用 / Project-specific
