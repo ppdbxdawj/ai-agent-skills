@@ -14,7 +14,7 @@ description: |
 license: MIT
 metadata:
   author: 疆疆
-  version: "0.5.0"
+  version: "0.6.0"
   tags:
     - workflow
     - prd-review
@@ -84,8 +84,9 @@ This skill governs 疆疆's project development workflow. Core principles: **str
   - ✅ 是否跑完了 lint / doctor / large-screen check 等验证命令并确保本次改动 0 新增错误？
   - ✅ 是否在 `*-fe-plan.md`（及飞书 `FE Plan`）回写了 `## 实施记录与待确认` 表格？
 - 如果是 **Stage 5（技术方案评审复盘与服务端/客户端 IDL 对齐）**：
-  - ✅ 拉取服务端 IDL（`internal-cli codebase mr diff -R "org/api_idl"` + `rushx idl`）后，是否清理了 `.idl/` 临时目录并还原了顺带更新的无关 proto 生成文件？
-  - ✅ 评估跨包组件复用时，是否拆清了「客户端 Native 容器层」与「Lynx 页面层」而不强行硬塞脏逻辑？
+  - ✅ 拉取服务端 IDL（`bytedcli codebase mr diff -R "tikcast/api_idl"` + `rushx idl`）后，是否清理了 `.idl/` 临时目录并还原了顺带更新的无关 proto 生成文件？
+  - ✅ 评估跨包组件复用时，当疆疆说「只是和你讨论放哪里好」时是否只输出多维度对比而未抢跑改代码？对不同服务端接口/IM 通道的场景是否按通道归属拆包隔离，确保原业务底座与原业务埋点 100% 零改动？
+  - ✅ 当多场评审会结论有出入需找 PM / DS 最终确认时，是否结合真实代码分支给出了结构化确认清单 + 可直接复制的飞书 `@` 消息模板，并在拿到回复后严格遵守「先改技术方案文档、再更新代码」的顺序？
   - ✅ 读取文档评论准备回复时，是否**先给出极简回复草稿请疆疆审核**而未擅自直接调 API 回复？
 - 如果是 **Stage 6（埋点评审对齐与埋点全量落地）**：
   - ✅ 用 `lark-cli sheets +csv-get` 读埋点表时，是否核对了 `current_region` 读全了右侧 `Q~T` 列（`param取值` / `备注` / `触发时机`）？
@@ -93,3 +94,4 @@ This skill governs 疆疆's project development workflow. Core principles: **str
   - ✅ 客户端负责的埋点是否已补充进飞书前端技术方案的 `Client` 表并用 `<cite type="user">` `@` 了 Meego 真实的 iOS/Android 研发？
   - ✅ 若新增了 `gift_enter_from` 送礼渠道值，是否同时检查了前端传参、服务端计值白名单与数仓营收表三方闭环？
   - ✅ 若修改了 `sab-kit logger` 的 `overwrite.ts`，是否跑了 `rushx logger` 重新生成运行时校验器？
+  - ✅ 埋点全量核查时是否检查了按钮状态切换防误报（如 `Pin` vs `Unpin`）与跨端 IM 缺字段兜底，并在需要提醒 DS / 服务端时使用 `lark-cli drive +add-comment --block-id "<sheetId>!<Col><Row>"` 评论到对应单元格？

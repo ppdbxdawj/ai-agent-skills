@@ -27,7 +27,7 @@ Follow this file strictly when 疆疆 provides the event tracking review transcr
    - 在 `Event Log / 埋点方案` 章节用 `<cite type="doc" doc-id="<sheet_token>" file-type="sheets">` 挂载埋点文档链接，并写明前端与客户端各自负责的埋点序号；
    - 在 `TBD / 待确认点` 下新增 `<h2>Client</h2>` 表格（编号 `C1, C2...`），写清客户端负责的埋点事件名、新增参数名与枚举值、以及前端通过 JSB（如 `business.sendGiftV2`）透传给客户端的字段契约。
 2. **反查真实客户端开发并 `@` 到文档**：
-   - 通过 `internal-cli --json meego workitem get --url "<meego_url>" --fields '["_all"]'` 读取 `[iOS]` 与 `[Android]` 角色的真实负责人邮箱；
+   - 通过 `bytedcli --json meego workitem get --url "<meego_url>" --fields '["_all"]'` 读取 `[iOS]` 与 `[Android]` 角色的真实负责人邮箱；
    - 用 `lark-cli contact +search-user --as user --query "<email>"` 查出 `open_id`；
    - 在 `Reference / 参考` 表的 `iOS` / `Android` 行、`Event Log / 埋点方案` 正文及 `Client` 表的 `Owner` 列中，使用 `<cite type="user" user-id="ou_xxx"></cite>` `@` 两位客户端开发。
 
@@ -42,14 +42,25 @@ Follow this file strictly when 疆疆 provides the event tracking review transcr
 
 ---
 
-## 4. 前端埋点代码落地与验证 | FE Tracking Implementation & Verification
+## 4. 前端埋点代码落地、全量复查与表格单元格评论 | FE Tracking Implementation, Full Audit & Sheet Cell Comments
+
+`[疆疆 updated 2026-11-10]`
 
 1. **注意点位生命周期与去重**：
    - 页面级/组件级 `show` 埋点注意防止重复曝光；
+   - **同一按钮切换状态时加状态守卫防误报**：例如详情页主播侧按钮在 `Pin to LIVE` 与 `Unpin` 之间切换时，`livesdk_gift_gallery_gift_pin_button` 的 `show` 与 `click` 必须加 `!pinState.isPinned` 判断，仅在按钮为 `Pin to LIVE` 时上报，切勿在点击 `Unpin` 时误报为 `Pin` 点击；
    - 弹窗 `leave` 埋点的 `duration` 注意核对单位（表格要求单位是**秒**还是**毫秒**）；
    - 从外部 Deep-link（如 `gift_panel_beacon_bubble` / `gift_tray`）直接打开详情半屏时，首次打开报外部来源，若用户在同会话内关掉详情半屏回到展馆主页再点开其他礼物，来源应切回 `'main_page'`。
-2. **`sab-kit logger` 强校验包必须跑 `rushx logger`**：
+2. **全量地毯式埋点复查（Event-by-Event Audit）**：
+   - 当疆疆要求「埋点整体检查下是否有遗漏」时，重新拉取埋点表最新 revision 与表格上的全部评论（`lark-cli drive file.comments list --params '{"file_token":"<sheet_token>","file_type":"sheet"}'`），逐事件、逐字段核对：
+     1. 每个必传参数在对应触发时机下是否真能从当前上下文或 IM 消息中拿到？
+     2. 若单条增量 IM 消息可能省略公共字段（如 Pin IM 省略 `class_type`），是否已回退读取 Store 缓存（如 `IndicatorStore.getState().classType`）兜底？
+     3. 当同一埋点事件被多个入口共用（如 `livesdk_gift_gallery_gift_pin_card` 同时覆盖 `entrance = 'gallery_goal'` 与 `'gift_gallery_detail'`）时，各入口下无法获取的跨端字段（如 Goal IM 无展馆段位 `class_type`）是否已向 DS 和服务端透明说明？
+3. **把需要提醒 DS / 服务端的事项直接评论到埋点表格对应单元格**：
+   - 使用 `lark-cli drive +add-comment --as user --doc "<sheet_url>" --block-id "<sheetId>!<Col><Row>"` 在具体参数所在单元格（如 `pg4jYt!K81`、`pg4jYt!Q103`）添加局部评论并 `@` 对应负责人；
+   - **CLI 参数避坑**：`--content` 数组里的每个 `{"type":"text","text":"..."}` 元素严禁只传纯空格字符串（如 `" "`），否则会被 `lark-cli` 校验器以 `requires non-empty text` 拒绝；连续 `@` 多人时直接相邻放置 `mention_user` 元素即可。
+4. **`sab-kit logger` 强校验包必须跑 `rushx logger`**：
    - 若目标包（如 `giftgallery-indicator`）使用 `sab-kit logger`（存在 `src/shared/logger/overwrite.ts` 与 `src/shared/logger/sdk/events.ts`），在修改 `overwrite.ts` 的枚举类型后，**必须执行 `rushx logger`** 重新生成 `sdk/types.ts` 和 `sdk/events.ts` 的 `_oneOf([...])` 校验器，否则运行时新增枚举值会被旧 validator 拦截。
-3. **验证与文档同步**：
+5. **验证与文档同步**：
    - 运行涉及包的 `rushx lint`、`rushx typecheck`、单测及根目录 `node scripts/large-screen/check.cjs --base origin/master`；
    - 将埋点落地情况更新回本地 `<feature>-fe-plan.md` 并同步至飞书 `FE Plan`。
