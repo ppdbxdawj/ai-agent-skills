@@ -87,6 +87,25 @@ Read this when something behaves unexpectedly, **before** assuming it's your bug
 
 发现一个改一个再发布；不要 push 到 public 之后才 force-push 删除（历史里仍可查）。
 
+## Protobuf3 默认零值与 JS `??` 短路陷阱
+
+`[疆疆 added 2026-11-19 (cross-project)]`
+
+- **现象**：服务端接口已返回新结构（如 `team_up_info`），但前端入口组件始终不渲染。
+- **根因**：Protobuf3 的数值/字符串字段（如 `int64 goal_count`）未显式赋值时，网关常序列化为默认零值 `0`、`""` 或 `"0"`（**而非** `null` / `undefined`）。若前端写 `Number(gift.goal_count ?? gift.sponsorship_require_count ?? 0)`，`0` 或 `"0"` 不会触发 `??` 回退而直接短路返回 `0`，导致下游 `target > 1` 等条件全部静默判定为 `false`。
+- **做法**：
+  1. 对 Protobuf 正数 / 非空字符串做多字段兜底时，一律用 `Number(a) || Number(b) || 0`（或显式 `Number(a) > 0 ? Number(a) : Number(b)`），严禁对可能为 `0 / ""` 的 Protobuf 字段盲用 `??`；
+  2. 若 proto 已约定某子消息（如 `team_up_info`）“未命中时不下发（absent）”，直接以 `Boolean(info)` 作为主开关，不要再叠一层容易被默认零值误杀的冗余阈值判断。
+
+## 增量接口回填的原地修改引用与 `Int64` ID 类型不一致
+
+`[疆疆 added 2026-11-19 (cross-project)]`
+
+- **现象**：二次请求拉回详情/排行榜列表数据后，界面人数或列表不刷新、或偶发匹配不到对应项。
+- **做法**：
+  1. **禁止原地 mutate 后传原引用**：严禁只写 `list[i].sub = item.sub` 然后 `setState({ current: list[i], rankList })`——对象/数组引用未变会导致组件跳过重绘；`setState` 时必须创建浅拷贝新引用（`{ ...list[i] }`、`[...rankList]`）。
+  2. **`Int64` ID 比较前统一 `String(...)`**：服务端 `int64` ID 在 JSON / JSB 透传中可能是 `string` 或 `number`，做 `includes` / `findIndex` / `===` 匹配前必须双端统一 `String(id)`。
+
 ## 待补充 | To be filled
 
 <!-- 疆疆 后续口述加在这里 -->

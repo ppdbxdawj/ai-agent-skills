@@ -56,6 +56,33 @@ git refresh-branch
 
 **`docs/` 目录不做 lint / prettier 检查** — 文档目录的 markdown 是"协调记录"性质，不要被 ESLint / Prettier 强制格式化卡住；写 ignore 规则时 `docs/` 默认排除。`[疆疆 added 2026-05-25 (from history)]`
 
+## 直播间中触（Indicator）与 Pin 卡客户端容器避坑
+
+`[疆疆 added 2026-11-10]`
+
+1. **中触展开态组件的 `onStateComplete` 不能只挂在 `expanded === true` 分支下**：
+   - 直播间中触基于多态组件同时挂载收缩帧（`expanded={false}`）与展开帧（`expanded={true}`）。
+   - 当客户端容器触发频控抑制展开时，只有 `expanded={false}` 实例被激活。若在 `componentDidUpdate` 中写 `if (!this.props.expanded) return;`，会导致 `onStateComplete` 永远不触发，中触整场直播卡死在该过渡状态。必须无论 `expanded` 为何值均按 `message?.id !== previousState.message?.id` 启动完成定时器，并在收到新 `message.id` 时先 `clearTimeouts()`。
+2. **中触收到非中触 UI 的旁路 IM（如 Pin / Unpin）必须提前 `return`**：
+   - 若某条消息仅用于驱动外部组件（本身不带完整主状态计数），处理完旁路副作用后必须立即 `return`，严禁继续进主状态 reducer 覆盖计数。
+3. **跨 Lynx 容器事件监听与横竖屏旋转重建**：
+   - 不同独立 LynxView 容器间通信必须通过客户端事件总线（`publishEvent` + `subscribeEvent` + `GlobalEventEmitter`）；
+   - 客户端横竖屏旋转重建容器时，需监听旋转事件并在卡片未过期时用最新进度快照重新唤起。
+
+## Lynx 弹窗层级（`x-overlay-ng`）与 Spark 多短链联调避坑
+
+`[疆疆 added 2026-11-19]`
+
+1. **`<Sheet container="SparkPopupViewController">`（`x-overlay-ng`）内严禁用 `position: fixed` 或在 `<scroll-view>` 内挂二级弹窗**：
+   - 在 Lynx 中，`position: fixed` 相对于底层根 `LynxView` 定位；若父组件已经挂载在原生 `<x-overlay-ng>` 弹窗层（如详情半屏 `<Sheet container="SparkPopupViewController">`）内，子组件用 `fixed` 会直接画在原生弹窗**背后**而完全看不见；挂在 `<scroll-view scroll-y>` 内部则会被滚动容器裁剪。
+   - **正确做法**：详情半屏内的二级面板/规则弹窗必须移出 `<scroll-view>`，作为 `<Detail>` 固定高度根容器的**同级末尾子节点**挂载，并用 `position: absolute; top/left/right/bottom: 0; zIndex` 铺满当前半屏（或走带 `container="SparkPopupViewController"` + 更高 `overlayLevel` 的 `Dialog/Sheet`）。
+2. **Spark 路由配测试泳道（`ppe_*`）时必须覆盖同一页面的全部 `spark_page` 短链入口**：
+   - 同一个 Lynx `template.js` 常被多个 `linkKey` 引用（例如从直播间中触打开主页走 `gift_gallery_index`，从礼物面板右上角直达详情页走 `gift_gallery_index_and_detail`）。
+   - 绑定 PPE 泳道时，必须排查并同步更新指向该包的所有 `spark_page` 短链环境配置，否则从旁路入口进入会落回线上旧包，出现“API 返回正常但完全看不到新 UI”的假象。
+3. **`sab-kit i18n` 静态扫描字面量约束与生成噪音清理**：
+   - 所有 `I18n('...')` / `I18n.t('...')` 调用必须直接传**字符串字面量**（条件分支写在调用外部：`cond ? I18n('a') : I18n('b')`），严禁将 key 存入变量再传 `I18n(keyVar)`，否则静态扫描器会漏扫导致包内缺词条；
+   - 执行 `sab-kit i18n` 后必须检查 `git status`，清理并还原未涉及页面的无关 `src/lang/*` / `TUXSheet` 噪音 diff。
+
 ## 内置 skill 入口（不要重复发明）
 
 monorepo 内已有大量项目专用 skill，任务命中这些主题时**先看那些**：
