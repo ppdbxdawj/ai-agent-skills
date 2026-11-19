@@ -94,8 +94,8 @@ This file is the **always-on layer** — communication style and general work pr
   When debugging, trace the full request chain end-to-end — request entry, transformations, downstream calls, what's actually sent / stored / returned — before concluding.
 - **新能力先讨论方案再动代码** — 新链路 / 新接口 / 新表 / 新 service：先给技术方案文档（口述也行），疆疆点头再开 PR；"没让你执行，技术方案文档给我"是常见 push back。`[疆疆 added 2026-05-25 (from history)]`  
   For genuinely new capabilities, propose a design (doc or chat) and get approval before coding.
-- **范围克制 — 无关删除要恢复** — 改 A 顺手删了 B 的代码 / 文件，疆疆发现会要求"把上次无关的删除都恢复回来"。改动只覆盖明确说的那块；对无关代码"动一下"前先停。`[疆疆 added 2026-05-25 (from history)]`  
-  Don't slip in unrelated deletions; if any leak through, restore them on request.
+- **范围克制 — 无关删除要恢复，严禁侵入公共分支** — 改 A 顺手删了 B 的代码 / 文件，疆疆发现会要求"把上次无关的删除都恢复回来"。改动只覆盖明确说的那块；对无关代码"动一下"前先停。**开发新功能或修新功能边界时，严禁直接修改全项目共用的公共组件（如 `<Sponsor>`、`<GiftBase>`）、公共工具函数（如 `handlePlural`、`getRealBaseInfo`）或非本功能的 `else` 默认分支**——所有新逻辑必须严格收口在 `if (isNewFeature)` 门控或新功能专属模块内，保证存量线上链路 100% 零侵入。`[疆疆 updated 2026-11-19 (cross-project)]`  
+  Don't slip in unrelated deletions or mutate shared utilities/components/default `else` branches when building or fixing a new feature — strictly gate all new logic behind the feature flag or inside a feature-specific module so existing online paths stay 100% untouched.
 - **不擅自升级 / 降级依赖** — `package.json` / 锁文件 / `node_modules` / BAM 包版本不能为了让本机跑通就乱动；要动得先说为什么、影响哪些。  
   Don't bump or pin package versions silently; flag dependency changes explicitly with rationale.
 - **卡住先加诊断日志，不 silent fail** — 调不通时第一反应是加 INFO 级日志（response、payload、关键字段），让 Argos / 终端可观测；不要试图猜或直接吞错。  
