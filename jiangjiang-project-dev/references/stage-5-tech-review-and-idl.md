@@ -10,7 +10,7 @@ Follow this file strictly when 疆疆 provides tech review transcripts, asks to 
 ## 1. 服务端 IDL 多轮迭代拉取与精确评估 | Server IDL Pull & Completeness Check
 
 1. **查看服务端 IDL MR 最新 Diff**：
-   - 使用 `bytedcli codebase mr view -R "tikcast/api_idl" <MR_IID>` 与 `bytedcli codebase mr diff -R "tikcast/api_idl" <MR_IID>` 查看最新 Version 的 proto 改动。
+   - 使用 `internal-cli codebase mr view -R "org/api_idl" <MR_IID>` 与 `internal-cli codebase mr diff -R "org/api_idl" <MR_IID>` 查看最新 Version 的 proto 改动。
    - **警惕口头字段名与 proto 真实字段名差异**：服务端同学在 IM 消息或会上口头说的字段名（如 `is_team_up_gift`、`progress_count`、`left_count_to_light_up`）常与 proto 实际提交的字段名（如 `team_up_mode_gift`、`base_sent_count + team_up_sent_count`、`left_count_to_lit_up`）存在拼写或拆分差异，必须以 `.proto` 源码为准并在前端适配层兼容。
 2. **执行 `rushx idl` 并保持工作区干净**：
    - 在涉及的包目录下运行 `rushx idl`（`sab-kit idl`）更新 `src/typings/idl/`。
@@ -21,7 +21,7 @@ Follow this file strictly when 疆疆 provides tech review transcripts, asks to 
      - **实时状态更新与去重**：30s 存活期内进度更新是否有唯一标识（如 `pin_id`）供前端判断「首次弹卡 vs 原地刷新进度（避免重复调 `showLynxPinCard` 导致闪烁或把观众手动关掉的卡又弹出来）」？
      - **中途进房快照**：观众中途进房走 MUnify 快照（`timing = NORMAL_PROGRESS`）时是否携带未过期的状态数据？
      - **主播侧操作与冷却**：是否包含发起操作的 HTTP 接口 `.proto` 及重进页面时的状态/冷却时间戳？
-     - **动态倒计时 / 多阶段 Banner / 富文本与单复数文案结构化下发** `[疆疆 added 2026-11-19]`：凡是 UI 含动态倒计时（如 `Starts in / Ends in [Xd Yh]`）、`[...]` 局部高亮、ICU `plural` 单复数，或词表位于前端多语言空间的模块（预热 / 进行中 / 总结），**不要接受服务端只下发单一拼死字符串 `banner_text`**（会导致 Prefetch 缓存倒计时冻结、与弹窗实时倒计时不一致、且前端缺时间戳在测试环境改开启时间时硬算 `+ N 天` 必错）；应主动要求服务端下发 `phase / banner_type` 枚举 + `start_s / end_s`（Unix 秒）+ 业务计数字段，由前端统一渲染并自行计算时长。
+     - **动态倒计时 / 多阶段 Banner / 富文本与单复数文案结构化下发** `[疆疆 added 2026-11-19]`：凡是 UI 含动态倒计时（如 `Starts in / Ends in [Xd Yh]`）、`[...]` 局部高亮、ICU `plural` 单复数，或词表位于前端 Starling 空间（`3588`）的多阶段模块（预热 / 进行中 / 总结），**不要接受服务端只下发单一拼死字符串 `banner_text`**（会导致 Prefetch 缓存倒计时冻结、与弹窗实时倒计时不一致、且前端缺时间戳在 PPE 改测试开启时间时硬算 `+ N 天` 必错）；应主动要求服务端下发 `phase / banner_type` 枚举 + `start_s / end_s`（Unix 秒）+ 业务计数字段，由前端统一走 Starling 渲染并自行计算时长。
    - 输出结论时分 **「已满足 ✅」** 与 **「还需补齐/确认 ⚠️」**，并在回复末尾附上一小段**可直接复制发给服务端同学的确认文案**。
 
 ---

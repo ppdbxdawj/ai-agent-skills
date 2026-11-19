@@ -40,6 +40,9 @@ Follow this file strictly when 疆疆 asks for a `prd review` or provides a Feis
 ### Step 1.3：盘点目标目录下的现有代码 | Inspect Target Codebase
 
 - 在最新 `master` 上，定位疆疆指定的文件夹（例如 `gallery` 涉及的所有前端/Lynx 包，注意区分老包与迁移后的新包，如 ReactLynx 2 vs ReactLynx 3）。
+- **【强制核验活跃构建入口与线上 Spark 路由 — 严防改到死代码】** `[疆疆 added 2026-11-19]`：
+  - 对每个候选包，必须先打开 `lynx.config.ts` / `sab.config.js` 检查 `source.entry`（或 `pack.pages`），并核对 `spark.config.ts` 的 `pageKey`（必要时跑 `internal-cli --json spark-platform link get --link-key <spark_page>` 看线上 `inEffect: true` 版本实际指向哪个 Gecko Channel）；
+  - 若某页面已从旧包构建入口移除并迁移至新子包（例如 `gift-gallery` 主页已迁至 `gift-gallery-main`，`live-goal` 的 `faq / contributor_list` 已迁至 `live-goal-minor`），必须在「涉及包与范围说明」中明确指出真实生效包，绝不在停编死文件上规划改动。
 - 顺着 PRD 提到的每个场景，逐一核对现有代码的：
   - 页面与组件树（Entry / Sub-components / Popups / Sheets）
   - 接口与 IDL 字段定义（如请求参数、返回列表结构、唯一键是 `gift_id` 还是格子 index/slot ID）

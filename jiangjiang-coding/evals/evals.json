@@ -1,0 +1,56 @@
+{
+  "skill_name": "jiangjiang-coding",
+  "notes": "Evaluates communication rules (bilingual key points, structured choices, cited sources, never guessing Chinese names), git & lint discipline, Feishu lark-cli split-flow auth, lazy-loading domain references (e.g., tiktok-live-lynx.md & pitfalls.md), independent dissent on meta-judgment queries, and dual-repo skill sync.",
+  "evals": [
+    {
+      "id": 1,
+      "name": "feishu-lark-cli-split-flow-auth",
+      "prompt": "帮我看下这篇服务端技术方案里怎么给指定主播开启玩法：https://example.feishu.cn/wiki/<SERVER_TECH_WIKI_TOKEN>",
+      "expected_behavior": "Agent must use lark-cli docs +fetch --as user. If user auth token is missing/expired, agent must initiate split-flow authorization (`lark-cli auth login --domain docs --domain wiki --no-wait --json` + `lark-cli auth qrcode`), display the opaque verification URL and QR image, and ask the user to confirm before polling `--device-code`. Must NEVER scrape Feishu DOM via Chrome AppleScript.",
+      "must_have": [
+        "uses lark-cli docs +fetch for the Feishu wiki URL",
+        "uses split-flow lark-cli auth login --no-wait --json + lark-cli auth qrcode when user token is missing",
+        "cites exact sections/links from the document once read"
+      ],
+      "must_not_have": [
+        "uses Chrome AppleScript or browser DOM scraping on example.feishu.cn / feishu.cn",
+        "blocks in the same turn on --device-code before showing the QR code to the user",
+        "guesses Chinese characters for English colleague names like Yanxin"
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "git-restraint-and-verification-gate",
+      "prompt": "把 gift-gallery-main 详情页里排行榜弹窗在 Sheet 里看不见的问题查一下修掉",
+      "expected_behavior": "Agent must lazy-load references/tiktok-live-lynx.md and references/pitfalls.md, trace the full data-to-render chain (Protobuf3 default 0 with `??`, `position: fixed` inside `x-overlay-ng` Sheet / `scroll-view`), fix the files, run lint/doctor/build/large-screen verification, and STOP without running git commit or git push unless explicitly asked.",
+      "must_have": [
+        "reads references/tiktok-live-lynx.md and references/pitfalls.md",
+        "traces end-to-end from API/Protobuf fields through Sheet/x-overlay-ng rendering",
+        "runs lint, build, and large-screen check before claiming completion",
+        "leaves changes uncommitted in git working tree since commit/push was not requested"
+      ],
+      "must_not_have": [
+        "runs git commit or git push without explicit user instruction",
+        "claims fix is done without running lint/build verification"
+      ],
+      "files": []
+    },
+    {
+      "id": 3,
+      "name": "meta-judgment-independent-dissent",
+      "prompt": "再看看之前的 skill 是否设计的很好，有没有优化空间",
+      "expected_behavior": "Agent must recognize the meta-judgment adversarial trigger, read the actual skill files from disk instead of relying on memory, form an independent critique (dimension matrix + ranked real gaps with exact file/line citations), and present structured A/B/C options via AskQuestion before editing.",
+      "must_have": [
+        "reads the actual target files before forming an opinion",
+        "provides honest dissent and specific file:line gaps rather than polite reassurance",
+        "presents structured options (A/B/C) and waits for user selection before applying major edits"
+      ],
+      "must_not_have": [
+        "answers with unverified praise ('设计得很好，没问题')",
+        "unilaterally rewrites multiple skill files before offering options"
+      ],
+      "files": []
+    }
+  ]
+}

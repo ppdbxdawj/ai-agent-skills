@@ -118,8 +118,8 @@ This file is the **always-on layer** — communication style and general work pr
   New / updated skills go through `skill-creator` (intent → structure → triggers → eval); skipping eval is a known push back.
 - **创作型迭代分版本不覆盖** — 写小说 / 剧本 / 文案 / 设计稿等创作工作，每轮迭代独立存档（`<slug>-v0.1.md → v0.2.md → v0.2.1.md`）方便对比与回滚。重大方向变更时旧版本归档（如 `outline-v2-100w-archive.md`），不允许直接覆盖之前的版本。详细命名 / 自检 / 反模式见 `self-adversarial-review/references/version-snapshot-protocol.md`。`[疆疆 added 2026-05-28 (cross-project)]`  
   For creative iteration (novel / screenplay / copy / design draft), snapshot every round as a sibling file (`<slug>-v0.1` → `v0.2` → `v0.2.1`); archive previous version on major direction changes (`-archive` suffix). Never overwrite prior versions. See `self-adversarial-review/references/version-snapshot-protocol.md`.
-- **读内网 / 需登录的链接：飞书资源一律走 `lark-cli`，非飞书内网才用 computer use** — 疆疆给飞书链接（`larkoffice.com` / `feishu.cn` 的 docx、wiki、sheets、base 等）让读时，**必须走 `lark-cli`**（先试默认/`--as user`，若报 `token_missing` / `need_user_authorization` 则直接走 `lark-cli auth login --no-wait --json` 发授权链接和二维码给疆疆完成授权，**禁止**切 Chrome AppleScript 抓飞书文档 DOM）。只有 `lark-cli` 不覆盖的非飞书内网页面（如 bytetech、Meego、Oncall 等），才用本机浏览器只读获取，且用完关掉自己开的标签页、不要抢焦点切前台 tab。`[疆疆 updated 2026-10-29 (cross-project)]`  
-  For Feishu links (`larkoffice.com` / `feishu.cn`), **always use `lark-cli`** — if the user token is missing or expired, trigger `lark-cli auth login` (split-flow with URL + QR code) rather than scraping Feishu DOM via Chrome AppleScript. Reserve local browser computer-use strictly for non-Feishu internal sites (`bytetech`, `Meego`, etc.) not covered by `lark-cli`, stay read-only, and never steal focus or leave temporary tabs open.
+- **读内网 / 需登录的链接：飞书资源一律走 `lark-cli`，非飞书内网才用 computer use** — 疆疆给飞书链接（`example.feishu.cn` / `feishu.cn` 的 docx、wiki、sheets、base 等）让读时，**必须走 `lark-cli`**（先试默认/`--as user`，若报 `token_missing` / `need_user_authorization` 则直接走 `lark-cli auth login --no-wait --json` 发授权链接和二维码给疆疆完成授权，**禁止**切 Chrome AppleScript 抓飞书文档 DOM）。只有 `lark-cli` 不覆盖的非飞书内网页面（如 bytetech、Meego、Oncall 等），才用本机浏览器只读获取，且用完关掉自己开的标签页、不要抢焦点切前台 tab。`[疆疆 updated 2026-10-29 (cross-project)]`  
+  For Feishu links (`example.feishu.cn` / `feishu.cn`), **always use `lark-cli`** — if the user token is missing or expired, trigger `lark-cli auth login` (split-flow with URL + QR code) rather than scraping Feishu DOM via Chrome AppleScript. Reserve local browser computer-use strictly for non-Feishu internal sites (`bytetech`, `Meego`, etc.) not covered by `lark-cli`, stay read-only, and never steal focus or leave temporary tabs open.
 
 ## 2.5 Agent / AI-native 工作规则 | Agent / AI-native working rules
 
@@ -162,7 +162,8 @@ This skill is not the harness; it is the **policy + memory** layer riding on top
 
 | 项目 / Project | 触发场景 | 读 / Read |
 |---|---|---|
-| `live_revenue_monorepo` | 任意 app（rushx、subspaces、内置 skill） | [`references/live-revenue-monorepo.md`](references/live-revenue-monorepo.md) |
+| `live_revenue_monorepo`（通用） | 仓库内任意包（`rushx`、`git refresh-branch`、内置 skill 索引） | [`references/live-revenue-monorepo.md`](references/live-revenue-monorepo.md) |
+| `live_revenue_monorepo`（TikTok LIVE Lynx） | 直播间中触、展馆、Live Goal、Pin 卡、`x-overlay-ng`、`lynx-rtl`、Starling ICU 复数、Native IM | [`references/tiktok-live-lynx.md`](references/tiktok-live-lynx.md) `[2026-11-19]` |
 | `taco_webapp` | 前端（路由、UI 布局、`tr()` i18n） | [`references/taco-webapp.md`](references/taco-webapp.md) |
 | `taco_gift_agent` | BFF（controller、schema、礼物 server RPC、docs/ 协调） | [`references/taco-gift-agent.md`](references/taco-gift-agent.md) |
 | `openclaw` / AIGC drama | 八角笼 publish、Seedance prompt、字幕 / 水印 / 封面、IP 调研 | [`references/openclaw.md`](references/openclaw.md) `[2026-05-25]` |
@@ -209,32 +210,13 @@ This skill is **alive** — 疆疆 keeps adding habits over time. The agent shou
    - 显式信号词（"加到 jiangjiang-coding"、"更新 skill"、"以后都…"）→ 直接写
    - 弱信号 / 拿不准 → 先问一句「这条要不要记进 jiangjiang-coding？」再写
 3. **去重 / 归位**（**通用优先**）：
-   - 先在 SKILL.md + references/ 下 `grep` 检查是否已存在或与现有冲突
-   - 决定写到哪一层（按命中下表）：
-
-   | 规则性质 | 写到 |
-   |---|---|
-   | 沟通习惯、跨项目通用偏好 | **本文件** §1 / §2 |
-   | Git / commit / changelog / rebase | `references/git-and-changelog.md` |
-   | live_revenue_monorepo 共性（rushx、目录结构、内置 skill） | `references/live-revenue-monorepo.md` |
-   | `taco_webapp` 独有（路由、UI、i18n） | `references/taco-webapp.md` |
-   | `taco_gift_agent` 独有（BFF、RPC、docs/ 协调） | `references/taco-gift-agent.md` |
-   | 数据库 / 队列 / 限流 / 敏感配置 / 节点契约 / 资产格式 | `references/architecture-and-data.md` |
-   | 文档 / 对外汇报 / 评审材料 / 给 leader 的说明 | `references/communication-and-docs.md` |
-   | AI coding plan / implementation plan / 技术方案 / Plan Mode 方案 | `references/plan-writing.md` |
-   | 踩坑 / 异常处理 / pre-existing 问题 / 密钥事故 | `references/pitfalls.md` |
-   | OpenClaw / AIGC drama 独有（八角笼、Seedance、IP 调研） | `references/openclaw.md` |
-   | AIPet / AIEvoPet 独有（桌宠 / 记忆日记 / 开源运营） | `references/aipet.md` |
-   | Agent / 天机 / 八角 / aigc-video / top-drama 独有 | `references/tianji-agent.md` |
-   | aidrama TikTok 短剧 pipeline 独有 | `references/aidrama.md` |
-   | idea 项目（实验 / 抠图 / ComfyUI / Seedream） | `references/idea.md` |
-   | 完全新项目 / 完全新类目（安全 / 测试 / 部署 …） | 新建 `references/<topic>.md` 并在 §3 触发表加一行 |
-
+   - 先在 `SKILL.md` + `references/` 下 `grep` 检查是否已存在或与现有冲突；
+   - 按 **§3.1（通用）** 与 **§3.2（项目专用）** 触发表就近归位（沟通习惯与跨项目通用偏好进本文件 §1 / §2；特定主题或项目独有规则进对应 `references/<topic>.md`；完全新项目/新类目则新建 `references/<topic>.md` 并在 §3 加一行，切勿同一条规则两处复写）。
 4. **写入格式**：在对应 section 末尾追加一行 / 段，行尾加 `[疆疆 added YYYY-MM-DD]` 标记。
-5. **同步 + 即时生效**：直接修改 `~/.cursor/skills/` 下对应的 skill（Cursor 实时生效），再同步到两个 GitHub 备份目录：
-   - **私密原版备份**：`~/.cursor/skills-github-export/`（远端私有库 `https://github.com/ppdbxdawj/cursor-skills.git`，1:1 原样保留）；
-   - **公开脱敏版本**：`~/.cursor/skills-public-export/`（远端公开库 `https://github.com/ppdbxdawj/ai-agent-skills.git`，脱敏内部链接/域名/路径后推送）。
-   同步完后**当前会话立即视新内容已生效**，不要用旧规则继续做事。`[疆疆 updated 2026-10-29 (cross-project)]`
+5. **一键双库同步 + 脱敏校验 + 即时生效**：直接修改 `~/.cursor/skills/` 下对应的 skill（Cursor 实时生效），然后运行 `~/.cursor/skills/sync-skills.sh --push` 自动同步并校验推送两个 GitHub 备份库：
+   - **私密原版备份**：`~/.cursor/skills-github-export/`（`https://github.com/ppdbxdawj/cursor-skills.git`，1:1 原样保留）；
+   - **公开脱敏版本**：`~/.cursor/skills-public-export/`（`https://github.com/ppdbxdawj/ai-agent-skills.git`，自动执行域名/路径/内部 CLI 脱敏并扫描拦截敏感词泄漏）。
+   同步完后**当前会话立即视新内容已生效**，不要用旧规则继续做事。`[疆疆 updated 2026-11-19 (cross-project)]`
 6. **回报 + 回写而非只修当次**：一句话告诉疆疆「已加到 `<file>` 的 `<section>`」，必要时附上原文。**关键：被纠正时不只是修当前文件，要同步把新规则写回 skill**，下次才不会再犯同样错误。`[疆疆 added 2026-05-25 (cross-project)]`
 
 ### 4.3 渐进加载落实自检 | Lazy-load self-check

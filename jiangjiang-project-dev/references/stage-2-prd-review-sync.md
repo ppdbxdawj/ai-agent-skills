@@ -12,8 +12,9 @@ Follow this file strictly when 疆疆 provides a PRD review meeting transcript/m
 1. **完整读取评审逐字稿 / 纪要**：
    - 仔细通读附件逐字稿或飞书妙记全文，梳理产品（PM）、服务端（Server）、客户端（Client）、前端（FE）、数仓（DW）在会上的讨论与最终拍板结论。
    - **严守来源铁律**：总结会上的每一条决议时，必须标注逐字稿行号区间（如 `[Transcript L262-L269]`），不凭印象臆造。
-2. **补充摸底新增范围的代码库（全程只读）**：
+2. **补充摸底新增范围的代码库（全程只读 + 构建入口核验）**：
    - 若会上或疆疆指令中新增了 Stage 1 未覆盖的前端包（例如从仅看 `gallery` 扩展到 `live-goal`、`live-goal-indicator`、`giftgallery-indicator`），立即在最新 `master` 上只读定位新增包的相关组件、接口、跨端传参（如 `sendGiftV2` 的 `enter_from` / `giftEnterSource` 枚举值）。
+   - **必验活跃构建入口** `[疆疆 added 2026-11-19]`：每纳入一个新页面（如 Goal 的 `faq`、`contributor_list`），必须先核查该包 `lynx.config.ts` 的 `entry` 与 `spark.config.ts` / `internal-cli spark-platform link get`，确认该页面未被拆分迁移到独立子包（如 `subspaces/live_goal/live-goal-minor`），防止遗漏真实发布包。
    - **本阶段仍然保持业务代码只读（Read-only on codebase）**。
 
 ---

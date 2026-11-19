@@ -4,15 +4,27 @@
     "should_trigger": true
   },
   {
-    "query": "帮我做一下这个需求的 prd review，链接是 https://example.feishu.cn/wiki/xxxx ，看下 magic-gift 目录",
-    "should_trigger": true
-  },
-  {
     "query": "这是prd评审的逐字稿，你看下 更新下问题和方案，然后live goal、中触、gallery的前端都要我们来改",
     "should_trigger": true
   },
   {
     "query": "按项目开发流程走第三阶段，开始写前端技术方案",
+    "should_trigger": true
+  },
+  {
+    "query": "单独从远端master最新的切一个分支出来开发吧，根据plan",
+    "should_trigger": true
+  },
+  {
+    "query": "重新拉取下服务端 idl，看看首页倒计时 banner 字段够不够用",
+    "should_trigger": true
+  },
+  {
+    "query": "埋点的评审逐字稿在这里，这个是埋点表格，看下埋点相关的改动",
+    "should_trigger": true
+  },
+  {
+    "query": "部署了之后为什么 gift_gallery_main 没有发布包？另外 rebase origin master 后完整检查一遍当前分支所有功能",
     "should_trigger": true
   },
   {

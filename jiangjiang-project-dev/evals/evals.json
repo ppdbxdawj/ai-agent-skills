@@ -1,23 +1,23 @@
 {
   "skill_name": "jiangjiang-project-dev",
-  "notes": "Evaluates Stage 1 (PRD Review), Stage 2 (Post-PRD Review Meeting Sync), Stage 3 (FE Tech Design + AI Plan dual deliverables), and strict stage isolation against undefined future stages.",
+  "notes": "Evaluates Stage 1 (PRD Review + active entry verification), Stage 2 (Post-PRD Review Meeting Sync), Stage 3 (FE Tech Design + AI Plan dual deliverables), Stage 4 (Branch from origin/master & Implement from Plan), Stage 5 (Tech Review & IDL Alignment including structured timestamps over static countdown text), Stage 6 (Tracking Sheet full-column read & tri-party loop), Stage 7 (PPE Spark AIO deployment, Spark link query whitelist, QA mindmap audit & post-rebase parallel subagent audit), and strict stage isolation against undefined Stage 8+.",
   "evals": [
     {
       "id": 1,
       "stage": "stage-1-prd-review",
       "prompt": "切回master分支，拉取下最新的master代码，然后看下 gallery文件夹下，针对 https://example.feishu.cn/wiki/<PRD_WIKI_TOKEN> 这个需求，代码的更改计划，以及需要和pm、其他端确认的点， 然后需要评论文档的点也和我check下",
-      "expected_behavior": "Agent must trigger Stage 1 (PRD Review): (1) checkout master and pull origin master; (2) use lark-cli to fetch the Feishu PRD (if user token is missing, run lark-cli auth login --no-wait --json + lark-cli auth qrcode and ask user to authorize; NEVER scrape Feishu via Chrome AppleScript); (3) inspect gallery packages in codebase read-only; (4) output Code Change Plan, Points to Confirm with PM/Server/Client, and Draft Doc Comments (PM-only, no @-mentions) for user check before posting.",
+      "expected_behavior": "Agent must trigger Stage 1 (PRD Review): (1) checkout master and pull origin master; (2) use lark-cli to fetch the Feishu PRD (split-flow QR auth if token missing; NEVER Chrome AppleScript); (3) verify active build entries in lynx.config.ts / spark.config.ts / Spark Platform so dead migrated pages are not targeted, inspecting codebase read-only; (4) output Code Change Plan, Points to Confirm with PM/Server/Client, and Draft Doc Comments (PM-only, no @-mentions) for user check before posting.",
       "must_have": [
         "runs git checkout master and git pull origin master",
         "uses lark-cli docs +fetch (or lark-cli auth login + qrcode if token missing)",
-        "inspects gallery directories in the codebase without modifying business source files",
+        "verifies active build entry and Spark page routing before targeting packages, keeping codebase read-only",
         "delivers 3 distinct sections: Code Change Plan, Points to Confirm (PM / Server / Client), and Draft Doc Comments (PM-only, no @mentions) for check"
       ],
       "must_not_have": [
         "uses Chrome AppleScript to scrape Feishu doc DOM",
         "posts comments to Feishu doc before user checks and approves them",
         "modifies business code files during PRD review stage",
-        "conflates Stage 1 PRD review with Stage 3 Tech Design writing"
+        "plans edits in dead unbuilt legacy pages without checking lynx.config.ts entry"
       ],
       "files": []
     },
@@ -25,10 +25,10 @@
       "id": 2,
       "stage": "stage-2-prd-review-sync",
       "prompt": "这是prd评审的逐字稿，你看下 更新下问题和方案，然后live goal、中触、gallery的前端都要我们来改",
-      "expected_behavior": "Agent must trigger Stage 2 (Post-PRD Review Meeting Sync): (1) read the meeting transcript and cite line ranges [Transcript Lxx-Lyy] for every decision; (2) inspect newly added packages (live-goal, giftgallery-indicator, gift-gallery-main) read-only; (3) output 3 deliverables: Key Decisions Table from the meeting, Updated Full-Scope FE Code Change Plan (with exact file paths & line numbers), and Updated Remaining Open Items (TBD). Must NOT prematurely create Feishu Tech Design docs (Stage 3).",
+      "expected_behavior": "Agent must trigger Stage 2 (Post-PRD Review Meeting Sync): (1) read the meeting transcript and cite line ranges [Transcript Lxx-Lyy] for every decision; (2) inspect newly added packages (live-goal, live-goal-minor if FAQ/contributor_list is involved, giftgallery-indicator, gift-gallery-main) read-only after checking active build entries; (3) output 3 deliverables: Key Decisions Table, Updated Full-Scope FE Code Change Plan, and Remaining TBDs.",
       "must_have": [
         "reads the transcript and cites [Transcript Lxx-Lyy] sources for decisions",
-        "inspects all specified frontend packages (live-goal, indicator, gallery) read-only",
+        "verifies active build entries for newly added pages (e.g., live-goal vs live-goal-minor) read-only",
         "outputs Key Decisions Table, Updated Full-Scope Code Change Plan, and Remaining TBDs"
       ],
       "must_not_have": [
@@ -41,29 +41,94 @@
       "id": 3,
       "stage": "stage-3-fe-tech-design",
       "prompt": "用之前的前端技术方案模板开始撰写前端技术方案",
-      "expected_behavior": "Agent must trigger Stage 3 and produce TWO separate artifacts: (1) Human-facing Feishu Tech Design doc in my_library (bilingual CN+EN, single-language section headings, top 中文/English anchor links, Mermaid flow chart, PRD screenshots, red-highlighted TBDs, NO internal line numbers or raw code trees); (2) AI-facing <feature>-fe-plan.md saved locally in repo root AND uploaded to Feishu my_library (containing exact file paths, line numbers, step-by-step instructions, non-goals, verification commands, and QA entry test cases), linked from the Tech Design doc's Reference table and Code changes section.",
+      "expected_behavior": "Agent must trigger Stage 3 and produce TWO separate artifacts: (1) Human-facing Feishu Tech Design doc in my_library (EN first, CN second, single-language section headings, top English/中文 anchor links, Mermaid flow chart, screenshots without double-scaling, red-highlighted TBDs, NO internal line numbers or raw code trees); (2) AI-facing <feature>-fe-plan.md saved locally in repo root AND uploaded to Feishu my_library, linked from the Tech Design doc.",
       "must_have": [
-        "creates human-facing Feishu Tech Design doc without cluttering it with line numbers or raw code file trees",
-        "writes local <feature>-fe-plan.md with exact file paths, line numbers, steps, non-goals, and test cases for AI execution",
+        "creates human-facing Feishu Tech Design doc without internal line numbers or raw code trees",
+        "writes local <feature>-fe-plan.md with exact file paths, line numbers, steps, non-goals, and test cases",
         "uploads <feature>-fe-plan.md to Feishu and links it inside the human-facing Feishu Tech Design doc"
       ],
       "must_not_have": [
         "mixes internal line numbers and code trees into the human-facing tech design prose",
+        "exposes internal estimation multipliers (x3 or +20%) in the human-facing doc",
         "leaves the AI-facing -fe-plan only on local disk without uploading and linking it on Feishu"
       ],
       "files": []
     },
     {
       "id": 4,
-      "stage": "stage-isolation-check",
-      "prompt": "我们要做 Stage 4 的流程，你按项目开发 skill 走",
-      "expected_behavior": "Agent must recognize that Stage 4+ is currently a placeholder in jiangjiang-project-dev and must NOT hallucinate a workflow; it should ask 疆疆 to define the exact steps for Stage 4 first.",
+      "stage": "stage-4-branch-and-implement",
+      "prompt": "单独从远端master最新的切一个分支出来开发吧，根据plan",
+      "expected_behavior": "Agent must trigger Stage 4: (1) run git fetch origin master && git checkout -b feat/<slug> origin/master; (2) implement the steps strictly within the files listed in <feature>-fe-plan.md while respecting Non-goals; (3) run verification gates (doctor, lint, large-screen check) and fix any new errors; (4) append an Implementation Log & Pending Items table to <feature>-fe-plan.md.",
       "must_have": [
-        "identifies Stage 4+ as TBD / not yet defined in jiangjiang-project-dev",
+        "fetches origin/master and cuts a new feature branch from origin/master",
+        "modifies only the files in the plan's expected file list",
+        "runs verification commands (lint, doctor, large-screen check) with 0 new errors",
+        "updates the plan with an implementation log and pending items table"
+      ],
+      "must_not_have": [
+        "modifies unrelated packages or hand-edits generated files listed in Non-goals",
+        "commits or pushes without explicit instruction"
+      ],
+      "files": []
+    },
+    {
+      "id": 5,
+      "stage": "stage-5-tech-review-and-idl",
+      "prompt": "重新拉取下服务端 idl 看看是否够，特别是首页这个三阶段倒计时 banner 只给 banner_text 行不行",
+      "expected_behavior": "Agent must trigger Stage 5: (1) inspect the server api_idl MR/branch and clean up any temporary .idl/ or unrelated generated files after codegen; (2) identify the anti-pattern of serving dynamic countdowns / multi-phase rich-text / ICU plural banners via a static `banner_text` string, and propose structured fields (`banner_type` enum + `start_s` / `end_s` timestamps + count) with a concise ready-to-send message for the server engineer.",
+      "must_have": [
+        "checks the server proto definition directly rather than relying on verbal field names",
+        "flags static banner_text as insufficient for dynamic countdown / prefetch / PPE time-override / FE Starling ICU",
+        "proposes structured phase enum + start_s/end_s timestamps and provides a concise copyable message for Server"
+      ],
+      "must_not_have": [
+        "leaves .idl/ cache or unrelated generated proto files dirty in git",
+        "unilaterally posts doc comment replies without user approval"
+      ],
+      "files": []
+    },
+    {
+      "id": 6,
+      "stage": "stage-6-tracking-review",
+      "prompt": "埋点的评审逐字稿在这里，这个是埋点表格链接，一起看下埋点相关的改动及执行方案",
+      "expected_behavior": "Agent must trigger Stage 6: (1) read the Feishu sheet via lark-cli sheets +workbook-info and +csv-get, verifying all rightmost columns (Q~T: enum values, notes, trigger timing) are fetched; (2) cross-check against the meeting transcript to spot deleted/stale rows and separate FE vs Client events; (3) check the tri-party loop (FE + Server allowlist + DW) if any new gift_enter_from value is introduced.",
+      "must_have": [
+        "fetches full column range including Q~T parameter enum/timing columns via lark-cli sheets",
+        "cross-checks transcript against sheet to flag stale rows and separate FE vs Client tracking",
+        "verifies FE + Server + DW tri-party alignment for new gift_enter_from values and runs rushx logger if overwrite.ts changes"
+      ],
+      "must_not_have": [
+        "truncates sheet reading at column P and guesses enum values"
+      ],
+      "files": []
+    },
+    {
+      "id": 7,
+      "stage": "stage-7-deploy-qa-and-premerge-audit",
+      "prompt": "部署了之后 tiktok_live_tt_live_lynx_gift_gallery_main 为什么没有发布包？顺便 rebase origin master 后完整检查一遍当前分支所有新增功能还有没有问题",
+      "expected_behavior": "Agent must trigger Stage 7: (1) inspect the BITS sub-pipeline DSL for CUSTOM (tiktok_spark_deploy) projects to check whether it only ran placeholder `scm_compile_beta` instead of `job_atoms/spark_aio_deployment@5.0.0`, check Flinx developer permissions, and verify all Spark short-links (`spark_page`) have `ppe_*` + query param whitelist (`s`/`d`) configured; (2) after rebasing `origin/master`, manually verify auto-merged files and dispatch parallel fresh read-only `explore` subagents per package to audit `git diff origin/master..HEAD` for Protobuf3 zero-value `??` traps, Native IM stripped fields, Lynx overlay/RTL issues, and ICU plural fallbacks.",
+      "must_have": [
+        "checks BITS sub-pipeline atom (`scm_compile_beta` vs `spark_aio_deployment@5.0.0`), Flinx permission, and Spark short-link env + query whitelist",
+        "verifies auto-merged files after git rebase origin/master so upstream features/i18n are not lost",
+        "spawns parallel fresh read-only explore subagents by package to adversarially audit the full branch diff"
+      ],
+      "must_not_have": [
+        "assumes a green scm_compile_beta job deployed a Spark AIO CUSTOM package",
+        "relies on a quick single-agent self-check instead of fresh-context package audits"
+      ],
+      "files": []
+    },
+    {
+      "id": 8,
+      "stage": "stage-isolation-check",
+      "prompt": "我们要做 Stage 8 的流程，你按项目开发 skill 走",
+      "expected_behavior": "Agent must recognize that Stage 8+ is currently a placeholder (TBD) in jiangjiang-project-dev and must NOT hallucinate a workflow; it should ask 疆疆 to define the exact steps for Stage 8 first.",
+      "must_have": [
+        "identifies Stage 8+ as TBD / not yet defined in jiangjiang-project-dev",
         "asks user for the exact requirements/steps before executing or codifying it"
       ],
       "must_not_have": [
-        "hallucinates a made-up Stage 4 SOP"
+        "hallucinates a made-up Stage 8 SOP"
       ],
       "files": []
     }

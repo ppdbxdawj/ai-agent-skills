@@ -58,7 +58,7 @@ EOF
 4. （如有需要）`git refresh-branch` 或 `git fetch origin master && git rebase origin/master`
 5. `git commit`（HEREDOC，body ≤ 100）
 6. `git push`，重写过历史就用 `--force-with-lease`
-7. 必要时建 MR（`git.example.com` 走 GitLab UI）
+7. 必要时建 MR（`<internal-gitlab-domain>` 走 GitLab UI）
 
 `[疆疆 added 2026-05-25 (from history)]`
 
@@ -68,7 +68,7 @@ monorepo 已有全局 alias `git refresh-branch`（master → rebase origin → 
 
 **整理分支时只保留自己的 commits** — rebase / cherry-pick 整理历史时把别人的 commit 剔掉，只留疆疆这条线的；merge 别人代码进来不算自己的 commit。`[疆疆 added 2026-05-25 (from history)]`
 
-**多轮方案迭代的功能分支在 rebase 主干前先 squash 成单 commit** — 当功能分支经过多轮方案调整（如 commit 1 新增了某实验组、commit 3 又删掉了该实验组），在 `git rebase origin/master` 前先用 `git reset --soft <merge-base>` + `git commit`（注意 commit body 每行 ≤ 100 字符以通过 commitlint）压成 1 个代表最终状态的干净 commit 再 rebase，避免在中间已被推翻的过渡 commit 上重复解冲突。`[疆疆 added 2026-11-09]`
+**多轮方案迭代的功能分支在 rebase 主干前视 MR 状态决定是否 squash** — 当本地尚未开 MR（或准备在最终合码前整理出单条干净历史），且分支经过多轮反复试错（如 commit 1 新增某实验组、commit 3 又删掉该实验组）时，可在 `git rebase origin/master` 前先用 `git reset --soft <merge-base>` + `git commit`（注意 commit body 每行 ≤ 100 字符）压成 1 个代表最终状态的干净 commit 再 rebase，避免在已推翻的中间过渡 commit 上重复解冲突；若远端已开联调 MR 且正在增量 review，则直接 `git rebase origin/master` + `git push --force-with-lease` 保留清晰演进轨迹（或先问疆疆是否压平）。`[疆疆 updated 2026-11-19]`
 
 手动版：
 

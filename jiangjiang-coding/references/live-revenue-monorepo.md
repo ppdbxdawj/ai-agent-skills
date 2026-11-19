@@ -1,32 +1,34 @@
-# live_revenue_monorepo | monorepo 通用规则
+# live_revenue_monorepo | monorepo 通用与 Taco 基础规则
 
-Read this when working anywhere under `live_revenue_monorepo`, especially `subspaces/taco/apps/`.
+Read this when working anywhere under `live_revenue_monorepo`.
+- 直播间与营收 ReactLynx 包（中触、展馆、Live Goal、Pin 卡、`x-overlay-ng`、`lynx-rtl`、Starling ICU）请同时阅读专篇：[`tiktok-live-lynx.md`](tiktok-live-lynx.md)。
+- Taco 端到端业务细则见 [`taco-webapp.md`](taco-webapp.md) 与 [`taco-gift-agent.md`](taco-gift-agent.md)。
 
 ## 基本结构
 
-- 入口：`subspaces/taco/apps/<app>` — 每个 app 自带 `package.json`、`CHANGELOG.md`、`CHANGELOG-EN.md`。
-- monorepo 工具：**rushx**（不是裸 npm / pnpm / yarn）。
-- 远端：`<internal-gitlab-domain>`（GitLab），不是 GitHub。MR 走 GitLab UI，不要用 `gh`。
+- 目录分层：`packages/apps/*`、`packages/libs/*`、`subspaces/*`（如 `subspaces/taco/apps/<app>`、`subspaces/tiktok_live_lynx/*`、`subspaces/live_goal/*`）。
+- monorepo 工具：**rush / rushx**（严禁裸跑 npm / pnpm / yarn 装包或调脚本）。
+- 远端：`<internal-gitlab-domain>`（GitLab），不是 GitHub。MR 走 GitLab UI 或 `internal-cli codebase mr`，不要用 `gh`。
 
-## 部署 / 运行环境
+## 部署 / 运行环境（服务端 & BFF）
 
-代码**部署在远程实例**，不是本机。`[疆疆 added 2026-05-25 (from history)]`
+代码**部署在远程多实例环境**，不是本机。`[疆疆 added 2026-05-25 (from history)]`
 
 - 涉及存储 / 缓存 / 文件下载 / 进程间状态时，方案要**跨实例可用**：用 Redis、TOS、DB 等远程存储；不要假设"写到本地磁盘"或"读本机进程内变量"能被另一台实例的请求看到。
 - 任何"我刚下载的图在 `/tmp/...`"这种思路都要警惕：另一台实例上根本没这个文件。
 
 ## 命令速查
 
-| 用途 | 命令 |
-|---|---|
-| Lint（commit 前必跑） | `rushx _phase:lint` |
-| Typecheck | `rushx typecheck` |
-| Dev | `rushx dev` |
-| Build | `rushx _phase:build` |
+| 用途 | Taco 包常用命令 | Sab / ReactLynx 包常用命令 |
+|---|---|---|
+| Lint（commit 前必跑） | `rushx _phase:lint` | `rushx lint`（或 `rushx verify`） |
+| Typecheck | `rushx typecheck` | `rushx typecheck` / `rushx type-check` |
+| Dev | `rushx dev` | `rushx start` / `rushx dev` |
+| Build | `rushx _phase:build` | `rushx build` |
+| 大屏适配检查（Lynx 必跑） | — | `node scripts/large-screen/check.cjs --base origin/master` |
 
 注意：
-
-- `rushx lint` 在 taco_webapp 是**未定义**的，要写 `rushx _phase:lint`。
+- `rushx lint` 在 `taco_webapp` 未定义，要写 `rushx _phase:lint`。
 - `rushx typecheck` 经常报 pre-existing 错误 — 详情见 [`pitfalls.md`](pitfalls.md#typecheck-pre-existing-错误)。
 
 ## `git refresh-branch` alias
@@ -41,7 +43,7 @@ git refresh-branch
 
 需要"切回 master、rebase、删除本地分支、再切出来同名分支"这一连串动作时**直接调它**，不要手敲那串命令。
 
-## 服务间通信 / 地址规范
+## 服务间通信 / 地址规范（Taco）
 
 `[疆疆 added 2026-05-25 (from history)]`
 
@@ -52,45 +54,16 @@ git refresh-branch
 
 ## 已生效规则
 
-`.cursor/rules/pre-commit-lint.mdc` 是 always-applied（详细要求见 SKILL.md §2「Lint 是 commit 前置」）。
-
-**`docs/` 目录不做 lint / prettier 检查** — 文档目录的 markdown 是"协调记录"性质，不要被 ESLint / Prettier 强制格式化卡住；写 ignore 规则时 `docs/` 默认排除。`[疆疆 added 2026-05-25 (from history)]`
-
-## 直播间中触（Indicator）与 Pin 卡客户端容器避坑
-
-`[疆疆 added 2026-11-10]`
-
-1. **中触展开态组件的 `onStateComplete` 不能只挂在 `expanded === true` 分支下**：
-   - 直播间中触基于多态组件同时挂载收缩帧（`expanded={false}`）与展开帧（`expanded={true}`）。
-   - 当客户端容器触发频控抑制展开时，只有 `expanded={false}` 实例被激活。若在 `componentDidUpdate` 中写 `if (!this.props.expanded) return;`，会导致 `onStateComplete` 永远不触发，中触整场直播卡死在该过渡状态。必须无论 `expanded` 为何值均按 `message?.id !== previousState.message?.id` 启动完成定时器，并在收到新 `message.id` 时先 `clearTimeouts()`。
-2. **中触收到非中触 UI 的旁路 IM（如 Pin / Unpin）必须提前 `return`**：
-   - 若某条消息仅用于驱动外部组件（本身不带完整主状态计数），处理完旁路副作用后必须立即 `return`，严禁继续进主状态 reducer 覆盖计数。
-3. **跨 Lynx 容器事件监听与横竖屏旋转重建**：
-   - 不同独立 LynxView 容器间通信必须通过客户端事件总线（`publishEvent` + `subscribeEvent` + `GlobalEventEmitter`）；
-   - 客户端横竖屏旋转重建容器时，需监听旋转事件并在卡片未过期时用最新进度快照重新唤起。
-
-## Lynx 弹窗层级（`x-overlay-ng`）与 Spark 多短链联调避坑
-
-`[疆疆 added 2026-11-19]`
-
-1. **`<Sheet container="SparkPopupViewController">`（`x-overlay-ng`）内严禁用 `position: fixed` 或在 `<scroll-view>` 内挂二级弹窗**：
-   - 在 Lynx 中，`position: fixed` 相对于底层根 `LynxView` 定位；若父组件已经挂载在原生 `<x-overlay-ng>` 弹窗层（如详情半屏 `<Sheet container="SparkPopupViewController">`）内，子组件用 `fixed` 会直接画在原生弹窗**背后**而完全看不见；挂在 `<scroll-view scroll-y>` 内部则会被滚动容器裁剪。
-   - **正确做法**：详情半屏内的二级面板/规则弹窗必须移出 `<scroll-view>`，作为 `<Detail>` 固定高度根容器的**同级末尾子节点**挂载，并用 `position: absolute; top/left/right/bottom: 0; zIndex` 铺满当前半屏（或走带 `container="SparkPopupViewController"` + 更高 `overlayLevel` 的 `Dialog/Sheet`）。
-2. **Spark 路由配测试泳道（`ppe_*`）时必须覆盖同一页面的全部 `spark_page` 短链入口**：
-   - 同一个 Lynx `template.js` 常被多个 `linkKey` 引用（例如从直播间中触打开主页走 `gift_gallery_index`，从礼物面板右上角直达详情页走 `gift_gallery_index_and_detail`）。
-   - 绑定 PPE 泳道时，必须排查并同步更新指向该包的所有 `spark_page` 短链环境配置，否则从旁路入口进入会落回线上旧包，出现“API 返回正常但完全看不到新 UI”的假象。
-3. **`sab-kit i18n` 静态扫描字面量约束与生成噪音清理**：
-   - 所有 `I18n('...')` / `I18n.t('...')` 调用必须直接传**字符串字面量**（条件分支写在调用外部：`cond ? I18n('a') : I18n('b')`），严禁将 key 存入变量再传 `I18n(keyVar)`，否则静态扫描器会漏扫导致包内缺词条；
-   - 执行 `sab-kit i18n` 后必须检查 `git status`，清理并还原未涉及页面的无关 `src/lang/*` / `TUXSheet` 噪音 diff。
+- `.cursor/rules/pre-commit-lint.mdc` 是 always-applied（详细要求见 SKILL.md §2「Lint 是 commit 前置」）。
+- **`docs/` 目录不做 lint / prettier 检查** — 文档目录的 markdown 是"协调记录"性质，不要被 ESLint / Prettier 强制格式化卡住；写 ignore 规则时 `docs/` 默认排除。`[疆疆 added 2026-05-25 (from history)]`
 
 ## 内置 skill 入口（不要重复发明）
 
 monorepo 内已有大量项目专用 skill，任务命中这些主题时**先看那些**：
 
+- 仓库级 `.agents/skills/`：`sab-reactlynx3-workflow`、`i18n-on-demand`、`activity-standards`
+- 仓库级 `.cursor/skills/`：`taco-regional-gift`、`taco-regional-gift-prompt`
 - `subspaces/taco/.cursor/skills/`：`workflow-builder`、`post-coding-verify`、`testing-knowledge`、`storage-knowledge`、`kitex-knowledge`、`tcc-deploy`、`metrics-knowledge`、`overpass-knowledge` 等
-- `live_revenue_monorepo/.cursor/skills/`：`taco-regional-gift`、`taco-regional-gift-prompt` 等
-
-不要在 `jiangjiang-coding` 里重复这些内容。
 
 ### Skill 查找顺序（通用）
 
@@ -98,11 +71,11 @@ monorepo 内已有大量项目专用 skill，任务命中这些主题时**先看
 
 接到任务想找 skill 时按这个顺序找，**不要只搜 workspace 子目录**：
 
-1. **`~/.cursor/skills/`** — 全局个人 skill（jiangjiang-coding、seedream-image-skill 等）
-2. **项目 `.cursor/skills/`** — 当前 repo 的项目 skill（如 `live_revenue_monorepo/.cursor/skills/` 与子目录 `subspaces/taco/.cursor/skills/`）
+1. **`~/.cursor/skills/`** — 全局个人 skill（`jiangjiang-coding`、`jiangjiang-project-dev` 等）
+2. **项目 `.cursor/skills/` 与 `.agents/skills/`** — 当前 repo 的项目 skill
 3. **其他用户级 skill 仓库** — `~/.claude/skills/`、`~/.agents/skills/`、`~/seedream-image-skill/<skill>/` 等
 
-每一层都看一遍再说"没有相关 skill"。尤其是 `jiangjiang-coding`：如果 workspace / Claude skill 列表没出现，也要继续查 `~/.cursor/skills/jiangjiang-coding/` 和 `~/seedream-image-skill/jiangjiang-coding/`，不要停在第一轮搜索。`[疆疆 added 2026-05-28]`
+每一层都看一遍再说"没有相关 skill"。`[疆疆 added 2026-05-28]`
 
 ## 待补充 | To be filled
 

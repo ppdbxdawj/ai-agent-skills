@@ -27,7 +27,7 @@ Follow this file strictly when 疆疆 provides the event tracking review transcr
    - 在 `Event Log / 埋点方案` 章节用 `<cite type="doc" doc-id="<sheet_token>" file-type="sheets">` 挂载埋点文档链接，并写明前端与客户端各自负责的埋点序号；
    - 在 `TBD / 待确认点` 下新增 `<h2>Client</h2>` 表格（编号 `C1, C2...`），写清客户端负责的埋点事件名、新增参数名与枚举值、以及前端通过 JSB（如 `business.sendGiftV2`）透传给客户端的字段契约。
 2. **反查真实客户端开发并 `@` 到文档**：
-   - 通过 `bytedcli --json meego workitem get --url "<meego_url>" --fields '["_all"]'` 读取 `[iOS]` 与 `[Android]` 角色的真实负责人邮箱；
+   - 通过 `internal-cli --json meego workitem get --url "<meego_url>" --fields '["_all"]'` 读取 `[iOS]` 与 `[Android]` 角色的真实负责人邮箱；
    - 用 `lark-cli contact +search-user --as user --query "<email>"` 查出 `open_id`；
    - 在 `Reference / 参考` 表的 `iOS` / `Android` 行、`Event Log / 埋点方案` 正文及 `Client` 表的 `Owner` 列中，使用 `<cite type="user" user-id="ou_xxx"></cite>` `@` 两位客户端开发。
 

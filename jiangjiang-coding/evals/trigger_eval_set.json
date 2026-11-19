@@ -1,0 +1,22 @@
+[
+  {
+    "query": "按我的习惯看下 live_revenue_monorepo 里 gift-gallery-main 这个弹窗为什么点不开，先别提交 git",
+    "should_trigger": true
+  },
+  {
+    "query": "给服务端 Yanxin 回复一下文档评论，然后帮我整理下双语技术方案要点",
+    "should_trigger": true
+  },
+  {
+    "query": "记住以后 Spark AIO 项目第一次跑流水线要检查是不是只生成了 SCM编译，写进我的 skill 里",
+    "should_trigger": true
+  },
+  {
+    "query": "今天 OpenAI 和 Google 有什么最新 AI 新闻？",
+    "should_trigger": false
+  },
+  {
+    "query": "帮我扫描一下 Mac 磁盘哪些缓存占空间可以清理",
+    "should_trigger": false
+  }
+]
