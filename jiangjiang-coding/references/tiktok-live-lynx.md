@@ -90,3 +90,16 @@ monorepo 中大量老包正在向 ReactLynx 3 / Spark AIO 拆包迁移，旧包�
    - 在 `live-goal` 等同时挂载 `I18n('key')`（`createI18nLegacy` 单参查表）与 `I18n.t('key', params)`（`i18next` 插值）的包中，凡是带 `{s_xxx}` 占位符的词条**必须调 `I18n.t(key, params)`**，误调 `I18n(key, params)` 会忽略第二参数直接把字面量 `{s_xxx}` 渲染上屏。
 3. **Starling 半成品期缺 `other` 分支的 ICU 复数兜底**：
    - 多语种翻译进行中时，阿语（`ar`）、英式英语（`en-GB`）等语种常先导出只有 `zero {...}` 或 `one {...}`、缺少 `other {...}` 的复数串。调用复数工具必须用 `handlePlural(text, { num: n, s_num: n })`（不能用不传 `num` 的 `getText`），且 `handlePlural` 在 `pluralWord` 与 `'other'` 均未命中时必须按 `['one', 'many', 'few', 'two', 'zero']` 兜底取首个非空分支，严禁把原始 `{num, plural, ...}` 源码暴露给用户。
+
+---
+
+## 8. ReactLynx 3 布局与 `@tiktok-arch/tux-react-lynx/tailwind-preset` 样式避坑
+
+`[疆疆 added 2026-11-20]`
+
+1. **`@tiktok-arch/tux-react-lynx/tailwind-preset` 声明了 `presets: []`，禁用 `.flex-1` / `.flex-shrink-0` / `.shrink-0` / `.gap-*`**：
+   - 在引入该 preset 的包（如 `gift-gallery-main`）中，Tailwind 默认 preset 被切断，编译产物 `template.js` 的 CSS 表中**完全不存在** `.flex-1`、`.flex-shrink-0`、`.shrink-0`、`.gap-*`。
+   - **修复铁律**：需要自适应伸缩时，严禁依赖 `className="flex-1"` 或内联简写 `style={{ flex: 1 }}`（ReactLynx 3 会把内联 `flex: 1` 错编为 `flex-basis: 0px; flex-grow: 0` 导致宽度/高度塌陷为 `0px`）；统一写显式长属性 `style={{ minWidth: 0, flexShrink: 1, flexGrow: 1 }}`（纵向用 `minHeight: 0`）或在 `.scss` 中声明 `flex-grow: 1; flex-shrink: 1; flex-basis: 0px;`。
+2. **Lynx `<view>` 默认是 `display: linear`（纵向线性布局），不是 Web 的 `block`**：
+   - 任何横向排列容器必须显式带 `flex flex-row`（或 `display: 'flex', flexDirection: 'row'`）；
+   - 带 `overflow-ellipsis` / `text-maxline` 的 `<text>` 严禁套在无 `flex`、无宽度的空 `<view>` 包装层内（否则在 `display: linear` 自动宽度盒子里会塌陷为 `0px` 不可见）；多行居中/对齐 `<text>` 显式加 `w-full`（`width: '100%'`）。
