@@ -20,28 +20,40 @@ monorepo 中大量老包正在向 ReactLynx 3 / Spark AIO 拆包迁移，旧包�
 
 ## 2. 直播间中触（Indicator）与共享宿主容器避坑
 
-`[疆疆 added 2026-11-10, updated 2026-11-19]`
+`[疆疆 added 2026-11-10, updated 2026-11-23]`
 
 1. **展开态组件的 `onStateComplete` 严禁只挂在 `expanded === true` 分支下**：
    - 直播间中触基于 `IndicatorMultiStateComponent` 同时挂载 24px 收缩帧（`expanded={false}`）与 60px 展开帧（`expanded={true}`）。
    - 当客户端容器触发频控抑制展开时，只有 `expanded={false}` 实例被激活。若在 `componentDidUpdate` 中写 `if (!this.props.expanded) return;`，会导致 `onStateComplete` 永远不触发，中触整场直播卡死在过渡状态。必须无论 `expanded` 为何值均按 `message?.id !== previousState.message?.id` 启动完成定时器，并在收到新 `message.id` 时先 `clearTimeouts()`。
-2. **收到非中触 UI 的旁路 IM（如 Pin / Unpin `timing = 11 / 12`）必须提前 `return`**：
-   - 若某条 `GalleryMiddleTouchInfo` 仅用于驱动外部组件（如唤起/关闭直播间 Pin 卡，本身不带完整的展馆点亮数），处理完旁路副作用后必须立即 `return`，严禁继续进主 `IndicatorReducer.onMessage` 覆盖底数。
+2. **收到非中触 UI 的旁路 IM（如 Pin / Unpin `timing = 11 / 12`）必须提前 `return`，且严禁在此之前判 `bool` 显隐开关**：
+   - 若某条 `GalleryMiddleTouchInfo` 仅用于驱动外部组件（如唤起/关闭直播间 Pin 卡，本身不带完整的展馆点亮数），处理完旁路副作用后必须立即 `return`，严禁继续进主 `IndicatorReducer.onMessage` 覆盖底数；
+   - 严禁在旁路提前 `return` 之前判 `msg.show_gallery_mid_touch === false`——Protobuf3 `emitDefaults` 会将局部旁路包里未赋值的 `bool` 序列化为 `false`，前置判断会误把正常显示的中触隐藏掉。
 3. **共存同一 `MiddleTouch` 宿主容器时卸载严禁调 `app.unsubscribeEvent`**：
    - `giftgallery-indicator` 与 `live-goal-indicator` 作为动态子卡运行在同一个 `MiddleTouch` LynxView 容器内，`app.unsubscribeEvent` 按宿主 `containerID` 全局生效。子卡在 `componentWillUnmount` 中**只能调用 `GlobalEventEmitter.removeListener`**，严禁调用 `app.unsubscribeEvent` 把同房间其他业务卡监听的转屏/关窗原生事件一并退订。
 4. **内部轮询合成消息保留业务激活态**：
    - 周末 24h 倒计时 `onPoll` 等前端自发构造消息调 `IndicatorReducer.onMessage` 时，必须从最新 Store 透传保留 `isTeamUpActive` 等当前周期状态字段，防止被 `Boolean(undefined)` 冲成 `false`。
+5. **子卡需临时隐藏但保留房间后台监听时，必须发 `CARD_HIDE` 而非 `CARD_REMOVE`**：
+   - 宿主 `MiddleTouch.doRemove`（`unify_base_module_remove_self`）会把子卡从 `renderList` 与 `backendRenderList` 彻底删除，导致房间内后续 `UNIFY_BASE_ACTION_REFRESH` 直接 `404` 丢弃，观众端 Pin 卡唤起、转屏重建与中触恢复全部失效；
+   - 应改发 `CARD_HIDE`（`live_lynx_goal_indicator_event_destory_self`）触发 `MiddleTouch.doHide` 移入 `0x0` 的 `backendRenderList` 后台保活，事件监听不断；后续需恢复上屏时调 `publishShowSelf`（`live_lynx_goal_indicator_event_show_self`，参数须带 `currentKey: cardId`，`publishStart`/`publishStop` 同理）即可切回可见队列。`[疆疆 added 2026-11-23]`
 
 ---
 
 ## 3. 跨容器 Pin 卡协同与横竖屏旋转重建
 
+`[疆疆 updated 2026-11-23]`
+
 1. **跨容器通信与旋转恢复**：
-   - 中触与直播间 Pin 卡运行在两个独立的 LynxView 容器中，跨容器通信统一走 `app.publishEvent` + `app.subscribeEvent` + `lynx.getJSModule('GlobalEventEmitter').addListener`；
+   - 中触与直播间 Pin 卡运行在两个独立的 LynxView 容器中，跨容器通信统一走 `app.publishEvent` + `app.subscribeEvent` + `lynx.getJSModule('GlobalEventEmitter').addListener`（注意先同步 `addListener` 再 `await subscribeEvent`，避免异步订阅窗口漏掉早期事件）；
    - 客户端在横竖屏旋转（`goal_pin_card_orientation_changed`）时会销毁 Pin 卡容器，需在中触侧监听并在卡片未过期、未被手动关闭时重调 `business.showLynxPinCard`（用最新进度更新 `contentInfo` 快照）。
 2. **顶替 Pin / 乱序 `UNPIN` 校验与 30s 时间窗过期重置**：
    - 主播在 30s 内用新礼物 B 顶替旧礼物 A 时，服务端异步下发的旧卡 `UNPIN` 往往晚于新卡 HTTP 响应到达。处理 `UNPIN` 前必须校验 `incomingUnpinId === lastShownPinId`，不匹配时直接忽略，防止清空新卡状态；
-   - 判断是否为同一张活跃 Pin 卡（`isSameActivePin`）时，必须同时校验 `lastShownPinEndTime * 1000 > Date.now()`——确保 30s 内点 `×`（或送不可连击大礼自动 `app.close()` 时同步广播 `lynx_pin_card_manual_closed`）后转屏不重弹，而 30s 自然到期后再次 Pin 同一礼物时观众端能正常弹新卡。
+   - 判断是否为同一张活跃 Pin 卡（`isSameActivePin`）时，必须同时校验 `lastShownPinEndTime * 1000 > Date.now()`——确保 30s 内点 `×`（或送不可连击大礼成功自动 `app.close()` 时同步广播 `lynx_pin_card_manual_closed`）后转屏不重弹，而 30s 自然到期后再次 Pin 同一礼物时观众端能正常弹新卡。
+3. **共享 Pin 卡槽位跨业务互顶时，严禁清空被顶替方的 `lastShownPinKey`**：
+   - 多个业务共用同一客户端 Pin 卡槽位（如 `'live_goal_pin_card'`）时，当业务 B（如 Goal Pin）顶替业务 A（如展馆众筹 Pin），业务 A 只能关闭转屏重弹开关（`dismissReopen`），**必须保留 `lastShownPinKey` 与 `lastShownPinEndTime`**；
+   - 若直接 `resetState()` 清空 `lastShownPinKey`，原 30s 窗口内任意一条携带 `pin_gift_info` 的礼物进度 IM 都会被误判为“新一次 Pin”，反把业务 B 的在显 Pin 卡劫持顶掉。`[疆疆 added 2026-11-23]`
+4. **Pin 卡送礼区分可连击小礼与大礼，关窗前必须校验送礼真实成功**：
+   - 可连击小礼物（`giftType === 1`）传 `clientShowComboButton: true` + `comboOffsetX / comboOffsetY` 并**保持 Pin 卡常驻**，以便观众边连击边看卡片实时 `+1` 进度；
+   - 非连击大礼物必须 `await business.sendGiftV2` 且确认 `res?.code === 1 && !res?.data?.errorCode` 后，再广播 `lynx_pin_card_manual_closed` 并调 `app.close()`，严禁在 0 币余额不足拉起充值面板时提前销毁 Pin 卡。`[疆疆 added 2026-11-23]`
 
 ---
 

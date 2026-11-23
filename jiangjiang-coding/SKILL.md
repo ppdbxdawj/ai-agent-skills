@@ -163,7 +163,7 @@ This skill is not the harness; it is the **policy + memory** layer riding on top
 | 项目 / Project | 触发场景 | 读 / Read |
 |---|---|---|
 | `live_revenue_monorepo`（通用） | 仓库内任意包（`rushx`、`git refresh-branch`、内置 skill 索引） | [`references/live-revenue-monorepo.md`](references/live-revenue-monorepo.md) |
-| `live_revenue_monorepo`（TikTok LIVE Lynx） | 直播间中触、展馆、Live Goal、Pin 卡、`x-overlay-ng`、`lynx-rtl`、Starling ICU 复数、Native IM | [`references/tiktok-live-lynx.md`](references/tiktok-live-lynx.md) `[2026-11-19]` |
+| `live_revenue_monorepo`（TikTok LIVE Lynx） | 直播间中触、展馆、Live Goal、Pin 卡、`x-overlay-ng`、`lynx-rtl`、Starling ICU 复数、Native IM | [`references/tiktok-live-lynx.md`](references/tiktok-live-lynx.md) `[2026-11-23]` |
 | `taco_webapp` | 前端（路由、UI 布局、`tr()` i18n） | [`references/taco-webapp.md`](references/taco-webapp.md) |
 | `taco_gift_agent` | BFF（controller、schema、礼物 server RPC、docs/ 协调） | [`references/taco-gift-agent.md`](references/taco-gift-agent.md) |
 | `openclaw` / AIGC drama | 八角笼 publish、Seedance prompt、字幕 / 水印 / 封面、IP 调研 | [`references/openclaw.md`](references/openclaw.md) `[2026-05-25]` |
